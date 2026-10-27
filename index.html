@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عالم الروايات</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="portalScreen" class="portal-screen">
+    <h1>Enter the world of novels</h1>
+    <div class="portal"></div>
+    <button id="openBtn" class="open-btn">OPEN</button>
+</div>
+
+<div id="mainSite" class="main-site" style="display:none">
+    <div class="container">
+        <h1 class="title">مكتبة الروايات</h1>
+        <div style="text-align:center; margin-bottom:20px;">
+            <a href="publish.html" class="read-btn">+ انشر روايتك</a>
+        </div>
+        <div class="chapters" id="novelsContainer">
+            <p style="color:#cbd5e1;text-align:center">بيحمل الروايات...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+var btn = document.getElementById('openBtn');
+var portal = document.getElementById('portalScreen');
+var main = document.getElementById('mainSite');
+var container = document.getElementById('novelsContainer');
+
+async function loadNovels(){
+    var res = await fetch('https://novels-app-2f35b-default-rtdb.firebaseio.com/novels.json');
+    var data = await res.json();
+    if(!data){
+        container.innerHTML = '<p style="color:#cbd5e1;text-align:center">لسه مفيش روايات، كن اول من ينشر!</p>';
+        return;
+    }
+    var html = '';
+    for(var id in data){
+        var novel = data[id];
+        html += '<div class="chapter-card">';
+        html += '<img src="'+novel.cover+'" style="width:100%;height:180px;object-fit:cover;border-radius:8px;margin-bottom:10px" />';
+        html += '<h3>'+novel.title+'</h3>';
+        html += '<p>'+(novel.summary||'').substring(0,100)+'...</p>';
+        html += '<a href="read.html?id='+id+'" class="read-btn">ابدأ القراءة ←</a>';
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+btn.onclick = function(){
+    portal.style.transition = '0.8s';
+    portal.style.opacity = '0';
+    setTimeout(function(){
+        portal.style.display = 'none';
+        main.style.display = 'block';
+        loadNovels();
+    }, 800);
+};
+</script>
+
+</body>
+</html>

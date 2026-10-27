@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><link rel="stylesheet" href="style.css"><title>قراءة</title></head>
+<body>
+<div class="container" style="max-width:800px">
+<a href="index.html" class="read-btn" style="margin:20px 0">← رجوع</a>
+<h1 id="title" class="title"></h1>
+<img id="cover" style="width:200px;height:200px;object-fit:cover;border-radius:15px;border:3px solid #38bfff;margin:20px auto;display:block" />
+<p id="summary" class="hero-text" style="font-size:20px!important"></p>
+<hr style="margin:20px 0;border-color:#38bfff">
+<div style="text-align:center;margin:10px">
+<button onclick="changeFont(2)" class="read-btn">A+</button>
+<button onclick="changeFont(-2)" class="read-btn">A-</button>
+</div>
+<div id="story-text" style="font-size:18px;line-height:1.8;white-space:pre-wrap"></div>
+</div>
+<script>
+let params = new URLSearchParams(window.location.search);
+let id = params.get('id');
+
+async function loadNovel(){
+  let res = await fetch(`https://novels-app-2f35b-default-rtdb.firebaseio.com/novels/${id}.json`);
+  let n = await res.json();
+
+  if(!n){
+    document.getElementById('title').innerText = "🗑️ الرواية دي اتمسحت";
+    document.getElementById('story-text').innerText = "الادمن مسح الرواية دي، مش هتظهر عند حد تاني 🙂";
+    document.getElementById('cover').style.display='none';
+    return;
+  }
+
+  document.getElementById('title').innerText = n.title;
+  document.getElementById('cover').src = n.cover;
+  document.getElementById('summary').innerText = n.summary;
+  document.getElementById('story-text').innerText = n.content;
+}
+
+loadNovel();
+
+let fontSize=18;
+function changeFont(c){ fontSize+=c; document.getElementById('story-text').style.fontSize=fontSize+'px'; }
+</script>
+</body>
+</html>

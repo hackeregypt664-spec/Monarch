@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم الادمن - مسح عن الكل</title>
+<style>
+body{font-family:sans-serif;background:#111;color:#fff;padding:20px}
+.card{background:#222;padding:15px;margin:10px 0;border-radius:10px;display:flex;justify-content:space-between;align-items:center}
+button{background:#ff0040;color:#fff;border:0;padding:10px 15px;border-radius:8px;cursor:pointer;font-weight:bold}
+button:hover{background:#ff3366}
+</style>
+</head>
+<body>
+<h2>🗑️ لوحة تحكم الادمن - امسح اي رواية من عند الكل</h2>
+<div id="list">بيحمل...</div>
+
+<script>
+const DB = "https://novels-app-2f35b-default-rtdb.firebaseio.com/novels";
+
+async function load(){
+  let res = await fetch(DB+".json");
+  let data = await res.json();
+  let html = "";
+  for(let id in data){
+    let n = data[id];
+   html += `<div class="card"><span>${n.title} - ${n.author || 'مجهول'}</span><button onclick="del('${id}')">مسح عن الكل 🙂🙃</button></div>`;
+  }
+  document.getElementById("list").innerHTML = html || "مفيش روايات";
+}
+// دالة المسح - هتمسح من عند الكل
+function del(id) {
+  if(!confirm('متأكد عايز تمسح الرواية دي؟')) return;
+  
+  // لو بتستخدم localStorage
+  let novels = JSON.parse(localStorage.getItem('novels') || '[]');
+  novels = novels.filter(n => n.id !== id);
+  localStorage.setItem('novels', JSON.stringify(novels));
+  
+  // لو بتستخدم Firebase - ضيف ده كمان
+  // db.collection('novels').doc(id).delete();
+
+  alert('اتمسحت يا Monarch ✅');
+  location.reload(); // يعمل تحديث للصفحة
+}
+
+// واتأكد ان الكود اللي بيعرض الروايات شكله كده:
+function showNovels() {
+  let novels = JSON.parse(localStorage.getItem('novels') || '[]');
+  let html = '';
+  novels.forEach(n => {
+    html += `<div class="card"><span>${n.title} - ${n.author || 'مجهول'}</span><button onclick="del('${n.id}')">مسح عن الكل</button></div>`;
+  });
+  document.getElementById('list').innerHTML = html;
+}
+load();
+</script>
+</body>
+</html>
