@@ -36,6 +36,7 @@ body{background:#08080f !important}
     <h1 style="color:#fff;letter-spacing:3px;margin-bottom:20px">ENTER THE WORLD OF NOVELS</h1>
     <div class="portal"></div>
     <button id="openBtn" class="open-btn">OPEN GATE</button>
+    <p id="gateMsg" style="color:#475569;font-size:12px;margin-top:15px">سجل دخولك أولا يا هانتر</p>
 </div>
 
 <div id="mainSite" class="main-site" style="display:none">
@@ -46,16 +47,13 @@ body{background:#08080f !important}
         <a href="publish.html" style="color:#fff;text-decoration:none;background:linear-gradient(90deg,#6d28d9,#38bdf8);padding:6px 14px;border-radius:20px">+ انشر</a>
       </div>
     </div>
-
     <div class="container" style="max-width:1200px;margin:0 auto;padding:20px">
         <h1 class="title">MONARCH ARCHIVE</h1>
         <p style="text-align:center;color:#475569;font-size:13px;margin-bottom:15px">أرشيف الهانترز - الرانك بيعلى تلقائيا باللايكات</p>
-        
         <div id="continueSection" class="continue-section">
-          <h3 style="color:#a78bfa;margin:0 0 12px 0">📖 اكمل القراءة <span style="color:#64748b;font-size:12px">- انت وقفت هنا</span></h3>
+          <h3 style="color:#a78bfa;margin:0 0 12px 0">📖 اكمل القراءة</h3>
           <div id="continueList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
         </div>
-
         <div class="filters">
             <button onclick="filterRank('all')" id="f-all" class="f-btn active">الكل</button>
             <button onclick="filterRank('S')" id="f-S" class="f-btn">S-Rank 🔥</button>
@@ -63,9 +61,8 @@ body{background:#08080f !important}
             <button onclick="sortBy('likes')" id="f-likes" class="f-btn">الأكثر حبا ❤️</button>
             <button onclick="sortBy('new')" id="f-new" class="f-btn">الأحدث ✨</button>
         </div>
-
         <div class="chapters" id="novelsContainer">
-            <p style="color:#475569;text-align:center;grid-column:1/-1">تفتح البوابة... بيحمل الروايات</p>
+            <p style="color:#475569;text-align:center;grid-column:1/-1">تفتح البوابة...</p>
         </div>
     </div>
 </div>
@@ -78,34 +75,23 @@ var container = document.getElementById('novelsContainer');
 var allNovels = [];
 var currentUser = JSON.parse(localStorage.getItem('monarch_user'));
 
-function escapeHtml(text){
-    if(!text) return '';
-    var div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-function calcRank(likes){
- likes = likes||0;
- if(likes >= 200) return 'Monarch';
- if(likes >= 100) return 'S';
- if(likes >= 50) return 'A';
- if(likes >= 20) return 'B';
- if(likes >= 10) return 'C';
- if(likes >= 5) return 'D';
- return 'E';
-}
+function escapeHtml(text){ if(!text) return ''; var div=document.createElement('div'); div.textContent=text; return div.innerHTML; }
+function calcRank(likes){ likes=likes||0; if(likes>=200) return 'Monarch'; if(likes>=100) return 'S'; if(likes>=50) return 'A'; if(likes>=20) return 'B'; if(likes>=10) return 'C'; if(likes>=5) return 'D'; return 'E'; }
+
 function checkUser(){
-  if(currentUser){
-    document.getElementById('userHello').innerText = '⚔️ Hunter: ' + currentUser.name;
-    document.getElementById('loginBtn').innerText = 'خروج';
-    document.getElementById('loginBtn').onclick = (e)=>{e.preventDefault(); localStorage.removeItem('monarch_user'); location.reload();}
+  if(!currentUser){
+    return false;
   }
+  document.getElementById('userHello').innerText = '⚔️ Hunter: ' + currentUser.name;
+  document.getElementById('loginBtn').innerText = 'خروج';
+  document.getElementById('loginBtn').onclick = (e)=>{e.preventDefault(); localStorage.removeItem('monarch_user'); location.href='login.html';}
+  return true;
 }
+
 function loadContinueReading(){
   let list = document.getElementById('continueList');
   let section = document.getElementById('continueSection');
-  let html = '';
-  let count = 0;
+  let html = ''; let count = 0;
   for(let i=0;i<localStorage.length;i++){
     let key = localStorage.key(i);
     if(key.startsWith('progress_')){
@@ -130,20 +116,15 @@ async function loadNovels(){
     try{
         var res = await fetch('https://novels-app-2f35b-default-rtdb.firebaseio.com/novels.json');
         var data = await res.json();
-        if(!data){
-            container.innerHTML = '<p style="color:#475569;text-align:center;grid-column:1/-1">لسه مفيش روايات، كن اول Monarch ينشر!</p>';
-            return;
-        }
+        if(!data){ container.innerHTML = '<p style="color:#475569;text-align:center;grid-column:1/-1">لسه مفيش روايات</p>'; return; }
         allNovels = [];
         for(var id in data){ data[id]._id=id; data[id].realRank=calcRank(data[id].likes); allNovels.push(data[id]); }
         render(allNovels);
         loadContinueReading();
-    } catch(e){
-        container.innerHTML = '<p style="color:#ef4444;text-align:center;grid-column:1/-1">حصل خطأ في فتح البوابة</p>';
-    }
+    } catch(e){ container.innerHTML = '<p style="color:#ef4444;text-align:center;grid-column:1/-1">خطأ في التحميل</p>'; }
 }
 function render(list){
-    if(list.length==0){ container.innerHTML='<p style="color:#475569;text-align:center;grid-column:1/-1">مفيش روايات في التصنيف ده</p>'; return; }
+    if(list.length==0){ container.innerHTML='<p style="color:#475569;text-align:center;grid-column:1/-1">مفيش نتائج</p>'; return; }
     var html='';
     for(var i=0;i<list.length;i++){
         var novel=list[i];
@@ -164,28 +145,25 @@ function render(list){
         html+='<p style="color:#64748b;font-size:13px;height:36px;overflow:hidden">'+summary+'...</p>';
         html+='<div class="meta-row"><span>✍️ '+author+'</span><span>❤️ '+likes+' | 👁️ '+views+'</span></div>';
         html+=progHtml;
-        html+='<a href="read.html?id='+encodeURIComponent(novel._id)+'" class="open-btn" style="display:block;text-align:center;text-decoration:none;padding:10px;margin-top:10px;font-size:13px">'+(prog?'اكمل القراءة '+prog+'% ←':'ابدأ القراءة ←')+'</a>';
+        html+='<a href="read.html?id='+encodeURIComponent(novel._id)+'" class="open-btn" style="display:block;text-align:center;text-decoration:none;padding:10px;margin-top:10px;font-size:13px">'+(prog?'اكمل '+prog+'% ←':'ابدأ القراءة ←')+'</a>';
         html+='</div>';
     }
     container.innerHTML=html;
 }
-function filterRank(r){
-    document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('f-'+r).classList.add('active');
-    if(r=='all') render(allNovels);
-    else render(allNovels.filter(n=>n.realRank==r));
-}
-function sortBy(type){
-    document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('f-'+type).classList.add('active');
-    var sorted=[...allNovels];
-    if(type=='likes') sorted.sort((a,b)=>(b.likes||0)-(a.likes||0));
-    if(type=='new') sorted.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    render(sorted);
-}
+function filterRank(r){ document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active')); document.getElementById('f-'+r).classList.add('active'); if(r=='all') render(allNovels); else render(allNovels.filter(n=>n.realRank==r)); }
+function sortBy(type){ document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active')); document.getElementById('f-'+type).classList.add('active'); var sorted=[...allNovels]; if(type=='likes') sorted.sort((a,b)=>(b.likes||0)-(a.likes||0)); if(type=='new') sorted.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); render(sorted); }
 
-// هنا التعديل المهم - البوابة تظهر كل مرة
+// === التعديل الاجباري ===
 btn.onclick=function(){
+    if(!currentUser){
+        document.getElementById('gateMsg').innerText = '🔐 لازم تسجل الأول...';
+        document.getElementById('gateMsg').style.color = '#ef4444';
+        btn.innerText = 'جاري التحويل...';
+        portal.style.transition='0.6s';
+        portal.style.opacity='0';
+        setTimeout(()=>{ location.href='login.html'; },600);
+        return;
+    }
     portal.style.transition='0.8s';
     portal.style.opacity='0';
     setTimeout(function(){ 
@@ -195,6 +173,12 @@ btn.onclick=function(){
         loadNovels(); 
     },800);
 };
+
+// لو حد حاول يفتح main مباشرة وهو مش مسجل
+if(currentUser){
+    document.getElementById('gateMsg').innerText = '👑 اهلا بعودتك ' + currentUser.name;
+    document.getElementById('gateMsg').style.color = '#a78bfa';
+}
 </script>
 </body>
 </html>

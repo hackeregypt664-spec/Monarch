@@ -15,7 +15,6 @@ input{width:100%;padding:14px;margin:8px 0;border-radius:12px;border:1px solid r
 input:focus{outline:none;border-color:#6d28d9}
 button{width:100%;padding:14px;background:linear-gradient(90deg,#6d28d9,#38bdf8);border:0;border-radius:12px;color:#fff;font-weight:900;font-size:16px;margin-top:12px;cursor:pointer;box-shadow:0 0 20px rgba(109,40,217,0.4)}
 a{color:#475569;text-decoration:none;font-size:12px;display:block;margin-top:15px}
-#newFields{transition:0.3s}
 </style>
 </head>
 <body>
@@ -43,16 +42,17 @@ function checkEmail(){
  let btn=document.getElementById('mainBtn');
  if(users[e]){
    newFields.style.display='none';
-   sub.innerText='👋 اهلا بعودتك يا هانتر - اكتب باسوردك';
+   sub.innerText='👋 اهلا بعودتك يا هانتر';
    sub.style.color='#a78bfa';
    btn.innerText='دخول 👑';
  } else {
    newFields.style.display='block';
-   sub.innerText=e ? '✨ هانتر جديد - كمل بياناتك' : 'اكتب ايميلك وهنعرف لو انت هانتر قديم ولا جديد';
+   sub.innerText=e ? '✨ هانتر جديد - كمل بياناتك' : 'سجل عشان تحفظ قراءتك';
    sub.style.color=e ? '#38bdf8' : '#64748b';
    btn.innerText='انشاء حساب 👑';
  }
 }
+
 async function login(){
  let n=document.getElementById('name').value.trim();
  let e=document.getElementById('email').value.trim();
@@ -62,15 +62,19 @@ async function login(){
  if(!e||!p) return msg.innerText='اكتب الايميل والباسورد';
  let users=JSON.parse(localStorage.getItem('monarch_users')||'{}');
 
+ function goNext(){
+   let next = localStorage.getItem('monarch_next');
+   if(next){ localStorage.removeItem('monarch_next'); location.href=next; } 
+   else { location.href='index.html'; }
+ }
+
  if(users[e]){
    if(users[e].pass!==p) return msg.innerText='كلمة السر غلط';
    localStorage.setItem('monarch_user', JSON.stringify(users[e]));
    msg.style.color='#22c55e'; msg.innerText='جاري الدخول...';
-   try{
-     await fetch(DB_USERS+".json",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({action:"login", email:e, name:users[e].name, time:Date.now()})});
-   }catch(err){}
+   try{ await fetch(DB_USERS+".json",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({action:"login", email:e, name:users[e].name, time:Date.now()})}); }catch(err){}
    alert('اهلا بعودتك '+users[e].name+' 👑');
-   location.href='index.html';
+   goNext();
  } else {
    if(!n) return msg.innerText='اكتب اسمك كـ Hunter';
    if(!p2) return msg.innerText='اكد كلمة السر';
@@ -81,11 +85,9 @@ async function login(){
    localStorage.setItem('monarch_users', JSON.stringify(users));
    localStorage.setItem('monarch_user', JSON.stringify(user));
    msg.style.color='#22c55e'; msg.innerText='جاري انشاء حسابك...';
-   try{
-     await fetch(DB_USERS+".json",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e,id:user.id,createdAt:Date.now()})});
-   }catch(err){}
+   try{ await fetch(DB_USERS+".json",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e,id:user.id,createdAt:Date.now()})}); }catch(err){}
    alert('اهلا '+n+' 👑 تم انشاء حسابك');
-   location.href='index.html';
+   goNext();
  }
 }
 checkEmail();
