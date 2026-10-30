@@ -9,17 +9,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 *{font-family:'Cairo', sans-serif}
 body{background:#08080f !important}
-.portal-screen{
- position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;
- display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999
-}
-.portal{
- width:320px;height:320px;
- background-image:url('https://static0.cbrimages.com/wordpress/wp-content/uploads/2024/04/gate-solo-leveling-1.jpeg?q=70&fit=crop&w=825&dpr=1.png');
- background-size:cover;background-position:center;border-radius:50%;
- box-shadow:0 0 60px rgba(109,40,217,0.8),0 0 100px rgba(56,189,248,0.4);
- animation:vortex 4s linear infinite
-}
+.portal-screen{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999}
+.portal{width:320px;height:320px;background-image:url('https://static0.cbrimages.com/wordpress/wp-content/uploads/2024/04/gate-solo-leveling-1.jpeg?q=70&fit=crop&w=825&dpr=1.png');background-size:cover;background-position:center;border-radius:50%;box-shadow:0 0 60px rgba(109,40,217,0.8),0 0 100px rgba(56,189,248,0.4);animation:vortex 4s linear infinite}
 @keyframes vortex{0%{transform:rotate(0deg)}100%{transform:rotate(-360deg)}}
 .open-btn{margin-top:30px;padding:14px 48px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;font-weight:900;border:0;border-radius:12px;cursor:pointer;box-shadow:0 0 20px rgba(109,40,217,0.5)}
 .title{text-align:center;color:#a78bfa;font-size:38px;font-weight:900;text-shadow:0 0 20px rgba(167,139,250,0.3);margin:20px 0 10px 0}
@@ -27,14 +18,10 @@ body{background:#08080f !important}
 .f-btn{padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#94a3b8;cursor:pointer;font-size:13px;transition:0.2s}
 .f-btn.active,.f-btn:hover{background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border-color:transparent;box-shadow:0 0 15px rgba(109,40,217,0.4)}
 .chapters{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:10px}
-.chapter-card{
- background:linear-gradient(145deg, rgba(24,24,40,0.8), rgba(15,15,25,0.8));
- border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:14px;
- transition:0.3s;position:relative;overflow:hidden
-}
+.chapter-card{background:linear-gradient(145deg, rgba(24,24,40,0.8), rgba(15,15,25,0.8));border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:14px;transition:0.3s;position:relative;overflow:hidden}
 .chapter-card:hover{transform:translateY(-4px);border-color:rgba(109,40,217,0.4);box-shadow:0 10px 30px rgba(109,40,217,0.2)}
 .rank-badge{position:absolute;top:12px;left:12px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;z-index:2}
-.rank-S{background:#facc15;color:#000}.rank-Monarch{background:linear-gradient(90deg,#a78bfa,#38bdf8);color:#fff}.rank-A{background:#ef4444;color:#fff}.rank-E{background:rgba(255,255,255,0.15);color:#cbd5e1}
+.rank-S{background:#facc15;color:#000}.rank-Monarch{background:linear-gradient(90deg,#a78bfa,#38bdf8);color:#fff}.rank-A{background:#ef4444;color:#fff}.rank-B{background:#8b5cf6;color:#fff}.rank-C{background:#38bdf8;color:#000}.rank-D{background:#22c55e;color:#000}.rank-E{background:rgba(255,255,255,0.15);color:#cbd5e1}
 .meta-row{display:flex;justify-content:space-between;color:#64748b;font-size:12px;margin:8px 0}
 </style>
 </head>
@@ -49,11 +36,10 @@ body{background:#08080f !important}
 <div id="mainSite" class="main-site" style="display:none">
     <div class="container" style="max-width:1200px;margin:0 auto;padding:20px">
         <h1 class="title">MONARCH ARCHIVE</h1>
-        <p style="text-align:center;color:#475569;font-size:13px;margin-bottom:15px">أرشيف الهانترز - حيث تولد الأساطير</p>
+        <p style="text-align:center;color:#475569;font-size:13px;margin-bottom:15px">أرشيف الهانترز - الرانك بيعلى تلقائيا باللايكات</p>
         
         <div style="text-align:center; margin-bottom:15px;">
             <a href="publish.html" class="open-btn" style="text-decoration:none;display:inline-block">+ انشر روايتك</a>
-            <a href="admin.html" style="color:#475569;font-size:12px;margin-right:15px;text-decoration:none">ادمن</a>
         </div>
 
         <div class="filters">
@@ -76,13 +62,24 @@ var portal = document.getElementById('portalScreen');
 var main = document.getElementById('mainSite');
 var container = document.getElementById('novelsContainer');
 var allNovels = [];
-var currentFilter = 'all';
 
 function escapeHtml(text){
     if(!text) return '';
     var div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// النظام الجديد: الرانك اوتوماتيك من الليكات
+function calcRank(likes){
+ likes = likes||0;
+ if(likes >= 200) return 'Monarch';
+ if(likes >= 100) return 'S';
+ if(likes >= 50) return 'A';
+ if(likes >= 20) return 'B';
+ if(likes >= 10) return 'C';
+ if(likes >= 5) return 'D';
+ return 'E';
 }
 
 async function loadNovels(){
@@ -94,7 +91,7 @@ async function loadNovels(){
             return;
         }
         allNovels = [];
-        for(var id in data){ data[id]._id=id; allNovels.push(data[id]); }
+        for(var id in data){ data[id]._id=id; data[id].realRank=calcRank(data[id].likes); allNovels.push(data[id]); }
         render(allNovels);
     } catch(e){
         container.innerHTML = '<p style="color:#ef4444;text-align:center;grid-column:1/-1">حصل خطأ في فتح البوابة، جرب تاني</p>';
@@ -110,7 +107,7 @@ function render(list){
         var title=escapeHtml(novel.title);
         var summary=escapeHtml((novel.summary||'بدون ملخص').substring(0,90));
         var author=escapeHtml(novel.author||'مجهول');
-        var rank=novel.rank||'E';
+        var rank=novel.realRank;
         var likes=novel.likes||0;
         var views=novel.views||0;
         html+='<div class="chapter-card">';
@@ -126,11 +123,10 @@ function render(list){
 }
 
 function filterRank(r){
-    currentFilter=r;
     document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('f-'+r).classList.add('active');
     if(r=='all') render(allNovels);
-    else render(allNovels.filter(n=>n.rank==r));
+    else render(allNovels.filter(n=>n.realRank==r));
 }
 
 function sortBy(type){

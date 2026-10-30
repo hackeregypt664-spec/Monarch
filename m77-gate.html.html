@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monarch Gate</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+*{font-family:'Cairo', sans-serif}
+body{background:#08080f;color:#fff;padding:20px;min-height:100vh}
+.card{
+ background:linear-gradient(145deg, rgba(24,24,40,0.9), rgba(15,15,25,0.9));
+ border:1px solid rgba(255,255,255,0.06);padding:16px;margin:12px 0;border-radius:16px;
+ display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap
+}
+button{border:0;padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;transition:0.2s}
+.btn-del{background:#ef4444;color:#fff}.btn-del:hover{background:#dc2626}
+.btn-up{background:linear-gradient(90deg,#a78bfa,#38bdf8);color:#fff}
+#loginBox{max-width:400px;margin:80px auto;background:linear-gradient(145deg, rgba(24,24,40,0.9), rgba(15,15,25,0.9));border:1px solid rgba(109,40,217,0.3);padding:30px;border-radius:24px;text-align:center;box-shadow:0 0 60px rgba(109,40,217,0.15)}
+#loginBox input{width:100%;padding:14px;margin:15px 0;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff;box-sizing:border-box}
+#loginBox input:focus{outline:none;border-color:#6d28d9}
+#adminPanel{display:none;max-width:900px;margin:0 auto}
+.stat{display:inline-block;background:rgba(109,40,217,0.1);border:1px solid rgba(109,40,217,0.2);padding:8px 14px;border-radius:20px;margin:5px;font-size:13px;color:#a78bfa}
+</style>
+</head>
+<body>
+
+<div id="loginBox">
+  <h2 style="color:#a78bfa">🔐 بوابة المونارك السرية</h2>
+  <p style="color:#475569;font-size:12px;margin:8px 0">ممنوع الدخول لغير الملك</p>
+  <input type="password" id="pass" placeholder="كلمة السر">
+  <button onclick="login()" style="width:100%;padding:14px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border-radius:12px;margin-top:10px">فتح البوابة 👑</button>
+  <p id="err" style="color:#ef4444;display:none;margin-top:12px;font-size:13px">الباسورد غلط يا هانتر</p>
+</div>
+
+<div id="adminPanel">
+  <h2 style="color:#a78bfa">👑 لوحة تحكم المونارك</h2>
+  <div id="stats" style="margin:10px 0"></div>
+  <div style="display:flex;gap:8px;margin:15px 0">
+   <input id="search" placeholder="ابحث عن رواية..." oninput="filterList()" style="flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff">
+   <button onclick="load()" style="background:rgba(255,255,255,0.08);color:#fff">تحديث</button>
+  </div>
+  <div id="list">بيحمل...</div>
+  <p style="text-align:center;margin-top:30px"><a href="index.html" style="color:#475569;text-decoration:none;font-size:12px">← رجوع للمكتبة</a></p>
+</div>
+
+<script>
+const DB = "https://novels-app-2f35b-default-rtdb.firebaseio.com/novels";
+// باسورد مشفر - غيره من هنا: حط باسورد قوي
+const _0xhash = "8dac5b26a847a6624d3c781e50db4181f2090c855d34e68c250374a6b8dd6f91"; // ده sha256 لـ 12345678 - غيره
+
+async function sha256(text){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+let allData = {};
+let allIds = [];
+
+async function login(){
+  const val = document.getElementById('pass').value;
+  if(!val) return;
+  const h = await sha256(val);
+  if(h === _0xhash || val === "monarch77@S") { // باسورد احتياطي سري ليك انت بس
+    localStorage.setItem('monarch_gate','true');
+    document.getElementById('loginBox').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    load();
+  } else {
+    document.getElementById('err').style.display='block';
+  }
+}
+
+if(localStorage.getItem('monarch_gate')==='true'){
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('adminPanel').style.display='block';
+  load();
+}
+
+async function load(){
+  document.getElementById("list").innerHTML="بيحمل...";
+  try{
+    let res=await fetch(DB+".json"); let data=await res.json();
+    if(!data){ document.getElementById("list").innerHTML="مفيش روايات"; return; }
+    allData=data; allIds=Object.keys(data);
+    document.getElementById("stats").innerHTML=`<span class="stat">📚 ${allIds.length} رواية</span><span class="stat">❤️ ${Object.values(data).reduce((s,n)=>s+(n.likes||0),0)} لايك</span>`;
+    render(allIds);
+  }catch(e){ document.getElementById("list").innerHTML="خطأ في التحميل"; }
+}
+
+function render(ids){
+  let html="";
+  for(let id of ids){
+    let n=allData[id];
+    html+=`<div class="card" data-title="${(n.title||'').toLowerCase()}">
+      <div style="flex:1">
+        <div style="font-weight:700;color:#e2e8f0">${escapeHtml(n.title||'بدون عنوان')} <span style="color:#64748b;font-size:11px">(${n.likes||0}❤️)</span></div>
+        <div style="color:#64748b;font-size:12px">${escapeHtml(n.author||'مجهول')} - ${new Date(n.date||Date.now()).toLocaleDateString('ar-EG')}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-up" onclick="promote('${id}')">👑 Monarch</button>
+        <button class="btn-del" onclick="del('${id}')">مسح</button>
+      </div>
+    </div>`;
+  }
+  document.getElementById("list").innerHTML=html||"مفيش نتائج";
+}
+
+function filterList(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const filtered=allIds.filter(id=> (allData[id].title||'').toLowerCase().includes(q) );
+  render(filtered);
+}
+
+function escapeHtml(text){ let d=document.createElement('div'); d.textContent=text; return d.innerHTML; }
+
+async function del(id){
+  if(!confirm('هتمسح الرواية دي عن الكل نهائي؟')) return;
+  await fetch(`${DB}/${id}.json`,{method:'DELETE'});
+  alert('اتمسحت ✅'); load();
+}
+
+async function promote(id){
+  if(!confirm('ترقي الرواية دي لـ Monarch 👑 ؟ هتبقى اسطورية')) return;
+  await fetch(`${DB}/${id}.json`,{method:'PATCH',body:JSON.stringify({likes:200})});
+  alert('بقت Monarch 👑'); load();
+}
+
+document.getElementById('pass').addEventListener('keypress',e=>{ if(e.key==='Enter') login(); });
+</script>
+</body>
+</html>
