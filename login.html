@@ -33,6 +33,8 @@ a{color:#475569;text-decoration:none;font-size:12px;display:block;margin-top:15p
 <p id="msg" style="color:#ef4444;font-size:12px;margin-top:10px"></p>
 </div>
 <script>
+const DB_USERS = "https://novels-app-2f35b-default-rtdb.firebaseio.com/users";
+
 function checkEmail(){
  let e=document.getElementById('email').value.trim();
  let users=JSON.parse(localStorage.getItem('monarch_users')||'{}');
@@ -51,7 +53,7 @@ function checkEmail(){
    btn.innerText='انشاء حساب 👑';
  }
 }
-function login(){
+async function login(){
  let n=document.getElementById('name').value.trim();
  let e=document.getElementById('email').value.trim();
  let p=document.getElementById('pass').value.trim();
@@ -59,14 +61,17 @@ function login(){
  let msg=document.getElementById('msg');
  if(!e||!p) return msg.innerText='اكتب الايميل والباسورد';
  let users=JSON.parse(localStorage.getItem('monarch_users')||'{}');
+
  if(users[e]){
-   // قديم - دخول بس
    if(users[e].pass!==p) return msg.innerText='كلمة السر غلط';
    localStorage.setItem('monarch_user', JSON.stringify(users[e]));
+   msg.style.color='#22c55e'; msg.innerText='جاري الدخول...';
+   try{
+     await fetch(DB_USERS+".json",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({action:"login", email:e, name:users[e].name, time:Date.now()})});
+   }catch(err){}
    alert('اهلا بعودتك '+users[e].name+' 👑');
    location.href='index.html';
  } else {
-   // جديد - لازم اسم وتأكيد
    if(!n) return msg.innerText='اكتب اسمك كـ Hunter';
    if(!p2) return msg.innerText='اكد كلمة السر';
    if(p!==p2) return msg.innerText='كلمتين السر مش زي بعض';
@@ -75,6 +80,10 @@ function login(){
    users[e]=user;
    localStorage.setItem('monarch_users', JSON.stringify(users));
    localStorage.setItem('monarch_user', JSON.stringify(user));
+   msg.style.color='#22c55e'; msg.innerText='جاري انشاء حسابك...';
+   try{
+     await fetch(DB_USERS+".json",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e,id:user.id,createdAt:Date.now()})});
+   }catch(err){}
    alert('اهلا '+n+' 👑 تم انشاء حسابك');
    location.href='index.html';
  }

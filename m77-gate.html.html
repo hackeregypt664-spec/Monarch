@@ -23,6 +23,7 @@ button{border:0;padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:7
 #adminPanel{display:none;max-width:950px;margin:0 auto}
 .stat{display:inline-block;background:rgba(109,40,217,0.1);border:1px solid rgba(109,40,217,0.2);padding:8px 14px;border-radius:20px;margin:5px;font-size:13px;color:#a78bfa}
 .bookmark-list{font-size:11px;color:#64748b;background:rgba(0,0,0,0.3);padding:6px 10px;border-radius:8px;margin-top:6px}
+.tab-active{background:linear-gradient(90deg,#a78bfa,#38bdf8) !important;color:#fff !important}
 </style>
 </head>
 <body>
@@ -38,17 +39,36 @@ button{border:0;padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:7
 <div id="adminPanel">
   <h2 style="color:#a78bfa">👑 لوحة تحكم المونارك المطورة</h2>
   <div id="stats" style="margin:10px 0"></div>
-  <div style="display:flex;gap:8px;margin:15px 0">
-   <input id="search" placeholder="ابحث عن رواية او كاتب..." oninput="filterList()" style="flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff">
-   <button onclick="load()" style="background:rgba(255,255,255,0.08);color:#fff">تحديث</button>
-   <button onclick="clearAllBookmarks()" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)">مسح كل العلامات 🔖</button>
+  
+  <div style="display:flex;gap:8px;margin:20px 0;flex-wrap:wrap">
+   <button onclick="showTab('novels')" id="tab-novels" class="btn-up">📚 الروايات</button>
+   <button onclick="showTab('users')" id="tab-users" class="btn-view">👥 المستخدمين</button>
+   <button onclick="showTab('logs')" id="tab-logs" class="btn-view">📝 سجل الدخول</button>
   </div>
-  <div id="list">بيحمل...</div>
+
+  <div id="novelsTab">
+    <div style="display:flex;gap:8px;margin:15px 0">
+     <input id="search" placeholder="ابحث عن رواية او كاتب..." oninput="filterList()" style="flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff">
+     <button onclick="load()" style="background:rgba(255,255,255,0.08);color:#fff">تحديث</button>
+     <button onclick="clearAllBookmarks()" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)">مسح علامات 🔖</button>
+    </div>
+    <div id="list">بيحمل...</div>
+  </div>
+
+  <div id="usersTab" style="display:none">
+    <div id="usersList">بيحمل...</div>
+  </div>
+
+  <div id="logsTab" style="display:none">
+    <div id="logsList">بيحمل...</div>
+  </div>
+
   <p style="text-align:center;margin-top:30px"><a href="index.html" style="color:#475569;text-decoration:none;font-size:12px">← رجوع للمكتبة</a></p>
 </div>
 
 <script>
 const DB = "https://novels-app-2f35b-default-rtdb.firebaseio.com/novels";
+const DB_USERS = "https://novels-app-2f35b-default-rtdb.firebaseio.com/users";
 const _0xhash = "8dac5b26a847a6624d3c781e50db4181f2090c855d34e68c250374a6b8dd6f91";
 
 async function sha256(text){
@@ -58,6 +78,7 @@ async function sha256(text){
 
 let allData = {};
 let allIds = [];
+let currentTab = 'novels';
 
 async function login(){
   const val = document.getElementById('pass').value;
@@ -85,20 +106,19 @@ async function load(){
     let res=await fetch(DB+".json"); let data=await res.json();
     if(!data){ document.getElementById("list").innerHTML="مفيش روايات"; return; }
     allData=data; allIds=Object.keys(data);
-    
-    // حساب احصائيات العلامات من localStorage
     let bmCount = 0;
-    for(let i=0;i<localStorage.length;i++){
-      if(localStorage.key(i).startsWith('bookmark_')) bmCount++;
-    }
-
+    for(let i=0;i<localStorage.length;i++){ if(localStorage.key(i).startsWith('bookmark_')) bmCount++; }
     document.getElementById("stats").innerHTML=`
       <span class="stat">📚 ${allIds.length} رواية</span>
       <span class="stat">❤️ ${Object.values(data).reduce((s,n)=>s+(n.likes||0),0)} لايك</span>
-      <span class="stat">🔖 ${bmCount} علامة قراءة محفوظة</span>
+      <span class="stat">🔖 ${bmCount} علامة</span>
       <span class="stat">👁️ ${Object.values(data).reduce((s,n)=>s+(n.views||0),0)} مشاهدة</span>
+      <span class="stat" id="usersCountStat">👥 يحمل...</span>
     `;
     render(allIds);
+    // حمل عدد المستخدمين
+    let uRes = await fetch(DB_USERS+".json"); let uData = await uRes.json();
+    if(uData) document.getElementById('usersCountStat').innerText = `👥 ${Object.keys(uData).length} مستخدم`;
   }catch(e){ document.getElementById("list").innerHTML="خطأ في التحميل"; }
 }
 
@@ -106,27 +126,15 @@ function render(ids){
   let html="";
   for(let id of ids){
     let n=allData[id];
-    let isBase64 = n.cover && n.cover.startsWith('data:');
-    let contentLength = n.content ? (n.content.length/1000).toFixed(1)+'K حرف' : '0';
-    // شوف لو فيه bookmarks للرواية دي
-    let bookmarksForThis = [];
-    for(let i=0;i<localStorage.length;i++){
-      let k = localStorage.key(i);
-      if(k.includes(id)){
-        bookmarksForThis.push(k + ': ' + localStorage.getItem(k));
-      }
-    }
-    let bmHtml = bookmarksForThis.length ? `<div class="bookmark-list">🔖 علامات: ${bookmarksForThis.length} قارئ واقف هنا</div>` : '';
-
+    let contentLength = n.content ? (n.content.length/1000).toFixed(1)+'K' : '0';
     html+=`<div class="card" data-title="${(n.title+' '+(n.author||'')).toLowerCase()}">
       <img src="${n.cover||''}" onerror="this.src='https://via.placeholder.com/60x80?text=No'">
       <div style="flex:1">
-        <div style="font-weight:700;color:#e2e8f0">${escapeHtml(n.title||'بدون عنوان')} <span style="color:#64748b;font-size:11px">(${n.likes||0}❤️ | ${n.views||0}👁️)</span></div>
-        <div style="color:#64748b;font-size:12px">✍️ ${escapeHtml(n.author||'مجهول')} - 📅 ${new Date(n.date||Date.now()).toLocaleDateString('ar-EG')} - 📄 ${contentLength} ${isBase64?' - 🖼️ صورة مرفوعة':''}</div>
-        ${bmHtml}
+        <div style="font-weight:700;color:#e2e8f0">${escapeHtml(n.title||'بدون عنوان')} <span style="color:#64748b;font-size:11px">(${n.likes||0}❤️)</span></div>
+        <div style="color:#64748b;font-size:12px">✍️ ${escapeHtml(n.author||'مجهول')} - 📄 ${contentLength}</div>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn-view" onclick="window.open('novel.html?id=${id}','_blank')">عرض</button>
+        <button class="btn-view" onclick="window.open('read.html?id=${id}','_blank')">عرض</button>
         <button class="btn-up" onclick="promote('${id}')">👑</button>
         <button class="btn-del" onclick="del('${id}')">مسح</button>
       </div>
@@ -135,38 +143,77 @@ function render(ids){
   document.getElementById("list").innerHTML=html||"مفيش نتائج";
 }
 
+async function showTab(t){
+ currentTab=t;
+ document.getElementById('novelsTab').style.display = t=='novels'?'block':'none';
+ document.getElementById('usersTab').style.display = t=='users'?'block':'none';
+ document.getElementById('logsTab').style.display = t=='logs'?'block':'none';
+ document.getElementById('tab-novels').className = t=='novels'?'btn-up':'btn-view';
+ document.getElementById('tab-users').className = t=='users'?'btn-up':'btn-view';
+ document.getElementById('tab-logs').className = t=='logs'?'btn-up':'btn-view';
+ if(t=='users') loadUsers();
+ if(t=='logs') loadLogs();
+}
+
+async function loadUsers(){
+ document.getElementById('usersList').innerHTML="بيحمل المستخدمين...";
+ try{
+  let res = await fetch(DB_USERS+".json"); let data = await res.json();
+  if(!data){ document.getElementById('usersList').innerHTML="مفيش مستخدمين لسه - لسه محدش سجل بعد التحديث"; return; }
+  let arr = Object.entries(data).filter(([k,v])=>!v.action).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  let html = "";
+  for(let [id,u] of arr){
+    html += `<div class="card">
+      <div>
+        <div style="color:#e2e8f0;font-weight:700">👤 ${escapeHtml(u.name||'بدون اسم')}</div>
+        <div style="color:#94a3b8;font-size:13px">📧 ${escapeHtml(u.email||'')}</div>
+        <div style="color:#475569;font-size:11px">🕒 ${new Date(u.createdAt||Date.now()).toLocaleString('ar-EG')} - ID: ${u.id||''}</div>
+      </div>
+      <div><span class="stat">جديد ✨</span></div>
+    </div>`;
+  }
+  document.getElementById('usersList').innerHTML = html + `<p style="color:#64748b;font-size:12px">الاجمالي: ${arr.length} مستخدم مسجل</p>`;
+ }catch(e){ document.getElementById('usersList').innerHTML="خطأ"; }
+}
+
+async function loadLogs(){
+ document.getElementById('logsList').innerHTML="بيحمل السجل...";
+ try{
+  let res = await fetch(DB_USERS+".json"); let data = await res.json();
+  if(!data) return;
+  let arr = Object.entries(data).filter(([k,v])=>v.action=='login').sort((a,b)=>(b[1].time||0)-(a[1].time||0)).slice(0,50);
+  let html = "";
+  for(let [id,u] of arr){
+    html += `<div class="card" style="padding:12px">
+      <div style="color:#94a3b8;font-size:12px">📧 ${escapeHtml(u.email||'')} - ${escapeHtml(u.name||'')} - 🕒 ${new Date(u.time).toLocaleString('ar-EG')}</div>
+      <span class="stat">دخول</span>
+    </div>`;
+  }
+  document.getElementById('logsList').innerHTML = html || "مفيش سجل دخول";
+ }catch(e){ document.getElementById('logsList').innerHTML="خطأ"; }
+}
+
 function filterList(){
   const q=document.getElementById('search').value.toLowerCase();
   const filtered=allIds.filter(id=> (allData[id].title+' '+(allData[id].author||'')).toLowerCase().includes(q) );
   render(filtered);
 }
-
 function escapeHtml(text){ let d=document.createElement('div'); d.textContent=text; return d.innerHTML; }
-
 async function del(id){
   if(!confirm('هتمسح الرواية دي عن الكل نهائي؟')) return;
   await fetch(`${DB}/${id}.json`,{method:'DELETE'});
   alert('اتمسحت ✅'); load();
 }
-
 async function promote(id){
   if(!confirm('ترقي الرواية دي لـ Monarch 👑 ؟')) return;
   await fetch(`${DB}/${id}.json`,{method:'PATCH',body:JSON.stringify({rank:'MONARCH', likes:200})});
   alert('بقت Monarch 👑'); load();
 }
-
 function clearAllBookmarks(){
-  if(!confirm('هتمسح كل علامات القراءة المحفوظة عندك في الجهاز؟')) return;
-  let toDel=[];
-  for(let i=0;i<localStorage.length;i++){
-    let k=localStorage.key(i);
-    if(k.startsWith('bookmark_')||k.startsWith('progress_')) toDel.push(k);
-  }
-  toDel.forEach(k=>localStorage.removeItem(k));
-  alert(`تم مسح ${toDel.length} علامة`);
-  load();
+  if(!confirm('هتمسح كل علامات القراءة المحفوظة عندك؟')) return;
+  let toDel=[]; for(let i=0;i<localStorage.length;i++){ let k=localStorage.key(i); if(k.startsWith('bookmark_')||k.startsWith('progress_')) toDel.push(k); }
+  toDel.forEach(k=>localStorage.removeItem(k)); alert(`تم مسح ${toDel.length}`); load();
 }
-
 document.getElementById('pass').addEventListener('keypress',e=>{ if(e.key==='Enter') login(); });
 </script>
 </body>
