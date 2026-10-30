@@ -12,10 +12,19 @@ body{background:#08080f;color:#fff;margin:0}
 .top-bar{position:sticky;top:4px;z-index:10;background:rgba(8,8,15,0.9);backdrop-filter:blur(20px);padding:12px;border-bottom:1px solid rgba(109,40,217,0.15);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
 #cover{width:230px;height:330px;object-fit:cover;border-radius:20px;border:1px solid rgba(109,40,217,0.3);margin:20px auto;display:block}
 .rank-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(109,40,217,0.15);border:1px solid rgba(109,40,217,0.3);color:#a78bfa}
-#bookmark-fab{position:fixed;bottom:25px;left:25px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border:0;border-radius:50%;width:56px;height:56px;font-size:22px;cursor:pointer;z-index:99}
+#bookmark-fab{position:fixed;bottom:25px;left:25px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border:0;border-radius:50%;width:56px;height:56px;font-size:22px;cursor:pointer;z-index:99;box-shadow:0 5px 20px rgba(109,40,217,0.4)}
 #bookmark-modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);display:none;justify-content:center;align-items:center;z-index:100}
 .modal-box{background:#181828;border:1px solid rgba(109,40,217,0.3);padding:24px;border-radius:20px;text-align:center;max-width:340px;width:90%}
 .comment-box{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px;margin:8px 0;border:1px solid rgba(255,255,255,0.04)}
+
+/* === ميزة العلامة على السطر === */
+#story-text p{position:relative;cursor:pointer;transition:0.2s;padding:10px 14px;border-radius:10px;border-right:3px solid transparent}
+#story-text p:hover{background:rgba(109,40,217,0.08);border-right-color:rgba(109,40,217,0.3)}
+#story-text p.marked{background:rgba(250,204,21,0.12) !important;border-right:3px solid #facc15 !important;box-shadow:0 0 15px rgba(250,204,21,0.15)}
+#story-text p.marked::after{content:'📌';position:absolute;left:10px;top:8px;font-size:14px}
+.marks-panel{position:fixed;bottom:90px;left:25px;background:#181828;border:1px solid rgba(250,204,21,0.3);border-radius:14px;padding:12px;width:200px;z-index:98;display:none;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+.mark-item{color:#cbd5e1;font-size:11px;padding:6px 8px;background:rgba(255,255,255,0.05);border-radius:6px;margin:4px 0;cursor:pointer;transition:0.2s}
+.mark-item:hover{background:rgba(250,204,21,0.15);color:#facc15}
 </style>
 </head>
 <body>
@@ -34,12 +43,14 @@ body{background:#08080f;color:#fff;margin:0}
 <img id="cover" style="display:none" />
 <p id="meta" style="color:#64748b;text-align:center;font-size:13px;margin:10px 0"></p>
 <p id="summary" style="font-size:15px;color:#94a3b8;text-align:center;background:rgba(109,40,217,0.08);padding:14px;border-radius:12px;display:none;line-height:1.8"></p>
+<div style="background:rgba(250,204,21,0.08);border:1px solid rgba(250,204,21,0.2);border-radius:10px;padding:10px;text-align:center;color:#facc15;font-size:12px;margin:10px 0">💡 دوس على أي فقرة علشان تعلمها 📌 لو هتقوم وترجع</div>
 <hr style="margin:20px 0;border:0;border-top:1px solid rgba(255,255,255,0.06)">
 <div id="story-text" style="background:rgba(24,24,40,0.5);padding:24px;border-radius:20px;border:1px solid rgba(255,255,255,0.04)"></div>
 <div style="margin-top:40px"><h3>💬 تعليقات <span id="cCount"></span></h3><div style="display:flex;gap:8px;margin:12px 0"><input id="cName" placeholder="اسمك" style="width:25%;padding:12px;border-radius:12px;border:1px solid #333;background:#000;color:#fff"><input id="cText" placeholder="قول رأيك..." style="flex:1;padding:12px;border-radius:12px;border:1px solid #333;background:#000;color:#fff"><button onclick="addComment()" style="padding:12px 18px;border-radius:12px;border:0;background:#6d28d9;color:#fff;cursor:pointer">نشر</button></div><div id="commentsList"></div></div>
 </div>
 
 <button id="bookmark-fab" onclick="saveBookmarkManual()">🔖</button>
+<div id="marks-panel" class="marks-panel"></div>
 <div id="bookmark-modal"><div class="modal-box"><p id="bm-text" style="color:#cbd5e1"></p><div style="display:flex;gap:10px;margin-top:15px"><button onclick="resumeRead()" style="flex:1;padding:12px;background:#6d28d9;border:0;border-radius:12px;color:#fff;cursor:pointer">كمل قراءة</button><button onclick="closeBm()" style="flex:1;padding:12px;background:rgba(255,255,255,0.06);border:0;border-radius:12px;color:#fff;cursor:pointer">من الأول</button></div></div></div>
 
 <script>
@@ -50,16 +61,62 @@ let currentNovel = null;
 let currentUser = JSON.parse(localStorage.getItem('monarch_user'));
 if(!currentUser){ localStorage.setItem('monarch_next','read.html?id='+id); location.href='login.html'; }
 function escapeHtml(text){ if(!text) return ''; let div=document.createElement('div'); div.textContent=text; return div.innerHTML; }
-function formatContent(text){
-  if(!text) return '';
-  return text.split(/\n\s*\n/).map(p=>{
-    p=p.trim(); if(!p) return '';
-    if(p==='---') return `<div style="text-align:center;color:#6d28d9;margin:30px 0;letter-spacing:8px;font-size:20px">• • •</div>`;
-    return `<p style="font-size:19px;line-height:2.15;color:#d1d5db;margin:18px 0;text-align:justify">${escapeHtml(p)}</p>`;
-  }).join('');
-}
+
 function getBmKey(){ return `bookmark_${currentUser ? currentUser.id+'_' : ''}${id}` }
 function getProgressKey(){ return `progress_${currentUser ? currentUser.id+'_' : ''}${id}` }
+function getMarksKey(){ return `marks_${currentUser ? currentUser.id+'_' : ''}${id}` }
+
+function formatContent(text){
+  if(!text) return '';
+  let marks = JSON.parse(localStorage.getItem(getMarksKey()) || '[]');
+  return text.split(/\n\s*\n/).map((p, idx)=>{
+    p=p.trim(); if(!p) return '';
+    if(p==='---') return `<div style="text-align:center;color:#6d28d9;margin:30px 0;letter-spacing:8px;font-size:20px">• • •</div>`;
+    let isMarked = marks.includes(idx);
+    return `<p data-idx="${idx}" class="${isMarked?'marked':''}" onclick="toggleMark(${idx}, this)">${escapeHtml(p)}</p>`;
+  }).join('');
+}
+
+function toggleMark(idx, el){
+  let marks = JSON.parse(localStorage.getItem(getMarksKey()) || '[]');
+  let exists = marks.indexOf(idx);
+  if(exists > -1){
+    marks.splice(exists, 1);
+    el.classList.remove('marked');
+  } else {
+    marks.push(idx);
+    el.classList.add('marked');
+    el.style.transform='scale(1.02)';
+    setTimeout(()=>el.style.transform='scale(1)',200);
+  }
+  localStorage.setItem(getMarksKey(), JSON.stringify(marks));
+  updateMarksPanel();
+  let fab = document.getElementById('bookmark-fab');
+  fab.innerText = exists>-1 ? '❌' : '📌';
+  setTimeout(()=>fab.innerText='🔖',1000);
+}
+
+function updateMarksPanel(){
+  let marks = JSON.parse(localStorage.getItem(getMarksKey()) || '[]');
+  let panel = document.getElementById('marks-panel');
+  if(marks.length === 0){ panel.style.display='none'; return; }
+  panel.style.display='block';
+  panel.innerHTML = `<div style="color:#facc15;font-size:12px;font-weight:700;margin-bottom:6px">📌 علاماتك (${marks.length})</div>` +
+    marks.map(i=>`<div class="mark-item" onclick="goToMark(${i})">سطر ${i+1} ←</div>`).join('') +
+    `<div onclick="clearAllMarks()" style="color:#ef4444;font-size:11px;text-align:center;margin-top:8px;cursor:pointer;padding:4px;background:rgba(239,68,68,0.1);border-radius:6px">مسح الكل</div>`;
+}
+function goToMark(idx){
+  let el = document.querySelector(`p[data-idx="${idx}"]`);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function clearAllMarks(){
+  if(confirm('تمسح كل العلامات؟')){
+    localStorage.removeItem(getMarksKey());
+    document.querySelectorAll('#story-text p.marked').forEach(p=>p.classList.remove('marked'));
+    updateMarksPanel();
+  }
+}
+
 function saveProgress(){
   let scroll = window.scrollY; let total = document.body.scrollHeight - window.innerHeight;
   let percent = total>0 ? Math.round((scroll/total)*100) : 0;
@@ -70,6 +127,7 @@ function saveBookmarkManual(){ saveProgress(); let btn=document.getElementById('
 function resumeRead(){ let pos=localStorage.getItem(getBmKey()); if(pos) window.scrollTo({top:parseInt(pos), behavior:'smooth'}); closeBm(); }
 function closeBm(){ document.getElementById('bookmark-modal').style.display='none'; }
 function checkBookmark(){ let pos=localStorage.getItem(getBmKey()); let prog=localStorage.getItem(getProgressKey()); if(pos && parseInt(pos)>300){ document.getElementById('bm-text').innerText=`انت وقفت عند ${prog||0}%، تكمل؟`; document.getElementById('bookmark-modal').style.display='flex'; } }
+
 async function loadNovel(){
   try{
     let res=await fetch(`${DB}.json`); let n=await res.json();
@@ -85,6 +143,7 @@ async function loadNovel(){
     fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({views:(n.views||0)+1})});
     loadComments(); setTimeout(checkBookmark,800); window.addEventListener('scroll', saveProgress);
     if(currentUser) document.getElementById('cName').value=currentUser.name;
+    updateMarksPanel();
   }catch(e){ document.getElementById('title').innerText="خطأ في التحميل"; }
 }
 async function likeNovel(){ if(localStorage.getItem('liked_'+id)) return alert('عملت لايك قبل كده'); let r=await fetch(`${DB}.json`); let n=await r.json(); let nl=(n.likes||0)+1; await fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({likes:nl})}); document.getElementById('likeCount').innerText=nl; localStorage.setItem('liked_'+id,'1'); }
