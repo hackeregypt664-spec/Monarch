@@ -11,22 +11,29 @@ body{background:#08080f;color:#fff;margin:0}
 #progress-bar{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,#6d28d9,#38bdf8);width:0%;z-index:9999}
 .top-bar{position:sticky;top:4px;z-index:10;background:rgba(8,8,15,0.9);backdrop-filter:blur(20px);padding:12px;border-bottom:1px solid rgba(109,40,217,0.15);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
 #cover{width:230px;height:330px;object-fit:cover;border-radius:20px;border:1px solid rgba(109,40,217,0.3);margin:20px auto;display:block}
-.rank-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(109,40,217,0.15);border:1px solid rgba(109,40,217,0.3);color:#a78bfa}
-#bookmark-fab{position:fixed;bottom:25px;left:25px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border:0;border-radius:50%;width:56px;height:56px;font-size:22px;cursor:pointer;z-index:99}
+
+/* أزرار الجنب */
+.side-tools{position:fixed;bottom:25px;left:25px;display:flex;flex-direction:column;gap:12px;z-index:99}
+.fab{width:56px;height:56px;border-radius:50%;border:0;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 5px 20px rgba(0,0,0,0.4);transition:0.3s}
+#bookmark-fab{background:linear-gradient(90deg,#6d28d9,#38bdf8)}
+#mark-btn{background:#1e1e30;border:1px solid rgba(255,255,255,0.1)}
+#mark-btn.active{background:#facc15 !important;color:#000 !important;box-shadow:0 0 20px rgba(250,204,21,0.5);transform:scale(1.1)}
 #bookmark-modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);display:none;justify-content:center;align-items:center;z-index:100}
 .modal-box{background:#181828;border:1px solid rgba(109,40,217,0.3);padding:24px;border-radius:20px;text-align:center;max-width:340px;width:90%}
-.comment-box{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px;margin:8px 0;border:1px solid rgba(255,255,255,0.04)}
 
-/* === تعليم الكلمة === */
-#story-text p{font-size:19px;line-height:2.3;color:#d1d5db;margin:18px 0;text-align:justify;word-spacing:3px}
-.word{cursor:pointer;padding:2px 3px;border-radius:6px;transition:0.15s}
-.word:hover{background:rgba(109,40,217,0.2)}
-.word.marked{background:#facc15 !important;color:#000 !important;font-weight:700;box-shadow:0 0 10px rgba(250,204,21,0.5);border-radius:4px}
-.marks-panel{position:fixed;bottom:90px;left:25px;background:#181828;border:1px solid rgba(250,204,21,0.3);border-radius:14px;padding:12px;width:220px;z-index:98;display:none;max-height:300px;overflow-y:auto}
+/* الكلمات */
+#story-text p{font-size:19px;line-height:2.3;color:#d1d5db;margin:18px 0;text-align:justify}
+.word{padding:2px 3px;border-radius:6px;transition:0.15s}
+body.mark-mode .word{cursor:pointer}
+body.mark-mode .word:hover{background:rgba(109,40,217,0.25)}
+.word.marked{background:#facc15 !important;color:#000 !important;font-weight:700;box-shadow:0 0 10px rgba(250,204,21,0.5)}
+.marks-panel{position:fixed;bottom:100px;left:90px;background:#181828;border:1px solid rgba(250,204,21,0.3);border-radius:14px;padding:12px;width:220px;z-index:98;display:none;max-height:300px;overflow-y:auto}
+#mark-hint{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#facc15;color:#000;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;display:none;z-index:101}
 </style>
 </head>
 <body>
 <div id="progress-bar"></div>
+<div id="mark-hint">🖍️ وضع التعليم شغال - دوس على أي كلمة</div>
 <div class="top-bar">
 <a href="index.html" style="background:rgba(255,255,255,0.06);padding:8px 14px;border-radius:20px;color:#fff;text-decoration:none;font-size:13px">← المكتبة</a>
 <button onclick="changeFont(2)" style="padding:8px 12px;border-radius:20px;border:1px solid #333;background:#000;color:#fff;cursor:pointer">A+</button>
@@ -39,11 +46,14 @@ body{background:#08080f;color:#fff;margin:0}
 <h1 id="title" style="color:#fff;text-align:center;font-weight:900">بيحمل...</h1>
 <img id="cover" style="display:none" />
 <p id="meta" style="color:#64748b;text-align:center;font-size:13px;margin:10px 0"></p>
-<div style="background:rgba(250,204,21,0.08);border:1px solid rgba(250,204,21,0.2);border-radius:10px;padding:10px;text-align:center;color:#facc15;font-size:12px;margin:10px 0">💡 دوس على أي <b>كلمة</b> علشان تعلمها 🖍️</div>
 <div id="story-text" style="background:rgba(24,24,40,0.5);padding:24px;border-radius:20px;border:1px solid rgba(255,255,255,0.04)"></div>
 </div>
 
-<button id="bookmark-fab" onclick="saveBookmarkManual()">🔖</button>
+<div class="side-tools">
+  <button id="mark-btn" class="fab" onclick="toggleMarkMode()" title="تفعيل التعليم">🖍️</button>
+  <button id="bookmark-fab" class="fab" onclick="saveBookmarkManual()" title="حفظ مكانك">🔖</button>
+</div>
+
 <div id="marks-panel" class="marks-panel"></div>
 <div id="bookmark-modal"><div class="modal-box"><p id="bm-text" style="color:#cbd5e1"></p><div style="display:flex;gap:10px;margin-top:15px"><button onclick="resumeRead()" style="flex:1;padding:12px;background:#6d28d9;border:0;border-radius:12px;color:#fff;cursor:pointer">كمل قراءة</button><button onclick="closeBm()" style="flex:1;padding:12px;background:rgba(255,255,255,0.06);border:0;border-radius:12px;color:#fff;cursor:pointer">من الأول</button></div></div></div>
 
@@ -59,26 +69,35 @@ function getBmKey(){ return `bookmark_${currentUser ? currentUser.id+'_' : ''}${
 function getProgressKey(){ return `progress_${currentUser ? currentUser.id+'_' : ''}${id}` }
 function getWordMarksKey(){ return `wordmarks_${currentUser ? currentUser.id+'_' : ''}${id}` }
 
+let markMode = false;
+function toggleMarkMode(){
+  markMode = !markMode;
+  document.body.classList.toggle('mark-mode', markMode);
+  document.getElementById('mark-btn').classList.toggle('active', markMode);
+  document.getElementById('mark-hint').style.display = markMode ? 'block' : 'none';
+  document.getElementById('mark-btn').innerText = markMode ? '✅' : '🖍️';
+  if(markMode){
+    setTimeout(()=>{ document.getElementById('mark-hint').style.display='none'; },3000);
+  } else {
+    updateWordPanel();
+  }
+}
+
 function formatContent(text){
   if(!text) return '';
   let marks = JSON.parse(localStorage.getItem(getWordMarksKey()) || '[]');
-  // marks = ["0-5", "2-10"] => para 0 word 5
-  
   return text.split(/\n\s*\n/).map((p, pIdx)=>{
     p=p.trim(); if(!p) return '';
     if(p==='---') return `<div style="text-align:center;color:#6d28d9;margin:30px 0;letter-spacing:8px">• • •</div>`;
-    
-    // قسم الفقرة لكلمات
-    let words = p.split(/(\s+)/); // يحافظ على المسافات
-    let html = '';
-    let wIdx = 0;
+    let words = p.split(/(\s+)/);
+    let html = ''; let wIdx = 0;
     words.forEach(w=>{
       if(w.trim()===''){
-        html += w; // مسافة
+        html += w;
       } else {
         let key = `${pIdx}-${wIdx}`;
         let isMarked = marks.includes(key);
-        html += `<span class="word ${isMarked?'marked':''}" data-key="${key}" onclick="toggleWord('${key}', this)">${escapeHtml(w)}</span>`;
+        html += `<span class="word ${isMarked?'marked':''}" data-key="${key}" onclick="onWordClick('${key}', this)">${escapeHtml(w)}</span>`;
         wIdx++;
       }
     });
@@ -86,7 +105,8 @@ function formatContent(text){
   }).join('');
 }
 
-function toggleWord(key, el){
+function onWordClick(key, el){
+  if(!markMode) return; // لو وضع التعليم مقفول ميعملش حاجة
   let marks = JSON.parse(localStorage.getItem(getWordMarksKey()) || '[]');
   let idx = marks.indexOf(key);
   if(idx > -1){
@@ -103,19 +123,16 @@ function toggleWord(key, el){
 function updateWordPanel(){
   let marks = JSON.parse(localStorage.getItem(getWordMarksKey()) || '[]');
   let panel = document.getElementById('marks-panel');
-  if(marks.length===0){ panel.style.display='none'; return; }
+  if(marks.length===0 || !markMode){ panel.style.display='none'; return; }
   panel.style.display='block';
-  
-  // جيب نص الكلمات المعلمة
   let words = [];
   marks.forEach(k=>{
     let el = document.querySelector(`[data-key="${k}"]`);
     if(el) words.push(el.innerText);
   });
-  
   panel.innerHTML = `<div style="color:#facc15;font-size:12px;font-weight:700">🖍️ كلماتك (${marks.length})</div>
   <div style="display:flex;flex-wrap:wrap;gap:4px;margin:8px 0">${words.map(w=>`<span style="background:#facc15;color:#000;padding:2px 6px;border-radius:6px;font-size:11px">${escapeHtml(w)}</span>`).join('')}</div>
-  <div onclick="clearWords()" style="color:#ef4444;font-size:11px;text-align:center;cursor:pointer;background:rgba(239,68,68,0.1);padding:4px;border-radius:6px">مسح الكل</div>`;
+  <div style="display:flex;gap:6px"><div onclick="clearWords()" style="flex:1;color:#ef4444;font-size:11px;text-align:center;cursor:pointer;background:rgba(239,68,68,0.1);padding:6px;border-radius:6px">مسح</div><div onclick="toggleMarkMode()" style="flex:1;color:#22c55e;font-size:11px;text-align:center;cursor:pointer;background:rgba(34,197,94,0.1);padding:6px;border-radius:6px">تم ✅</div></div>`;
 }
 function clearWords(){ if(confirm('تمسح كل الكلمات؟')){ localStorage.removeItem(getWordMarksKey()); document.querySelectorAll('.word.marked').forEach(e=>e.classList.remove('marked')); updateWordPanel(); } }
 
@@ -140,7 +157,6 @@ async function loadNovel(){
   document.getElementById('likeCount').innerText=n.likes||0;
   fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({views:(n.views||0)+1})});
   setTimeout(checkBookmark,800); window.addEventListener('scroll', saveProgress);
-  updateWordPanel();
 }
 async function likeNovel(){ if(localStorage.getItem('liked_'+id)) return alert('عملت لايك قبل كده'); let r=await fetch(`${DB}.json`); let n=await r.json(); let nl=(n.likes||0)+1; await fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({likes:nl})}); document.getElementById('likeCount').innerText=nl; localStorage.setItem('liked_'+id,'1'); }
 loadNovel();
