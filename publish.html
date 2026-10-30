@@ -20,30 +20,35 @@ body{background:#08080f !important;min-height:100vh;display:flex;align-items:cen
  box-shadow: 0 0 60px rgba(109,40,217,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 .title{font-size:32px !important;font-weight:900;text-align:center;color:#a78bfa;text-shadow:0 0 20px rgba(167,139,250,0.4);margin-bottom:5px !important}
-.subtitle{text-align:center;color:#64748b;font-size:14px;margin-bottom:25px}
+.subtitle{text-align:center;color:#64748b;font-size:14px;margin-bottom:15px}
+.user-bar{display:flex;justify-content:space-between;align-items:center;background:rgba(109,40,217,0.1);border:1px solid rgba(109,40,217,0.2);padding:8px 12px;border-radius:10px;color:#c4b5fd;font-size:12px;margin-bottom:15px}
 label{color:#94a3b8;font-size:13px;margin:8px 4px 0 0;display:block}
 input, textarea{
  width:100%;padding:14px 16px;margin:6px 0 12px 0;border-radius:12px;
  border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);
  color:#fff;box-sizing:border-box;transition:0.3s;font-size:14px
 }
-input:focus, textarea:focus{outline:none;border-color:#6d28d9;box-shadow:0 0 0 3px rgba(109,40,217,0.2);background:rgba(0,0,0,0.6)}
+input:focus, textarea:focus{outline:none;border-color:#6d28d9;box-shadow:0 0 0 3px rgba(109,40,217,0.2)}
 textarea{resize:none}
+.upload-box{border:2px dashed rgba(109,40,217,0.4);border-radius:16px;padding:20px;text-align:center;background:rgba(109,40,217,0.05);margin:12px 0;cursor:pointer;transition:0.3s}
+.upload-box:hover{background:rgba(109,40,217,0.1);border-color:#a78bfa}
+.upload-box span{color:#a78bfa;font-size:13px;font-weight:700}
+.upload-box p{color:#64748b;font-size:11px;margin:5px 0 0 0}
 .ai-box{background:linear-gradient(135deg, rgba(139,92,246,0.1), rgba(56,189,248,0.1));border:1px dashed rgba(139,92,246,0.4);border-radius:16px;padding:16px;margin:12px 0}
-.ai-title{color:#a78bfa;font-size:13px;font-weight:700;margin-bottom:8px}
-#preview{width:100%;height:240px;object-fit:cover;border-radius:16px;display:none;margin:12px 0;border:1px solid rgba(139,92,246,0.3);box-shadow:0 10px 30px rgba(0,0,0,0.5)}
-#btn{width:100%;padding:16px;border:0;border-radius:14px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;font-weight:900;font-size:16px;cursor:pointer;transition:0.3s;box-shadow:0 0 20px rgba(109,40,217,0.4)}
-#btn:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(109,40,217,0.6)}
-#btn:disabled{background:#222;box-shadow:none;transform:none;cursor:not-allowed}
+#preview{width:100%;height:240px;object-fit:cover;border-radius:16px;display:none;margin:12px 0;border:1px solid rgba(139,92,246,0.3)}
+#btn{width:100%;padding:16px;border:0;border-radius:14px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;font-weight:900;font-size:16px;cursor:pointer;box-shadow:0 0 20px rgba(109,40,217,0.4)}
 #msg{text-align:center;margin-top:14px;font-size:14px;font-weight:700;display:none;padding:10px;border-radius:10px}
-.rank-info{text-align:center;background:rgba(109,40,217,0.08);border:1px solid rgba(109,40,217,0.15);padding:8px;border-radius:10px;color:#94a3b8;font-size:12px;margin-bottom:10px}
 </style>
 </head>
 <body>
 <div class="card">
 <h1 class="title">MONARCH ARCHIVE</h1>
 <p class="subtitle">وثق روايتك كـ Hunter في الأرشيف</p>
-<div class="rank-info">🎖️ كل الروايات تبدأ Rank E - الرانك بيعلى تلقائيا باللايكات</div>
+
+<div class="user-bar" id="userBar">
+<span id="userName">Hunter: جاري التحقق...</span>
+<a href="login.html" id="loginLink" style="color:#f87171;text-decoration:none;">تسجيل دخول</a>
+</div>
 
 <label>اسم الرواية *</label>
 <input id="title" placeholder="مثال: ظلال البوابة السوداء" maxlength="100">
@@ -51,26 +56,87 @@ textarea{resize:none}
 <label>اسم الكاتب</label>
 <input id="author" placeholder="مجهول" maxlength="50">
 
+<!-- رفع الغلاف من الجهاز -->
+<label>غلاف الرواية (من جهازك) *</label>
+<div class="upload-box" onclick="document.getElementById('coverFile').click()">
+<span>📸 اضغط لرفع صورة الغلاف</span>
+<p>JPG, PNG - هتظهر فورا</p>
+</div>
+<input type="file" id="coverFile" accept="image/*" hidden>
+<input id="cover" placeholder="رابط الغلاف سيظهر هنا تلقائيا" style="font-size:12px;color:#64748b">
+<img id="preview">
+
 <div class="ai-box">
-<div class="ai-title">✨ مولد أغلفة الـ Monarch AI</div>
-<input id="aiPrompt" placeholder="اوصف الغلاف: فارس بعيون زرقاء، بوابة عملاقة...">
+<div style="color:#a78bfa;font-size:13px;font-weight:700;margin-bottom:8px">✨ او توليد بالـ AI</div>
+<input id="aiPrompt" placeholder="اوصف الغلاف: فارس بعيون زرقاء...">
 <button onclick="genCover()" style="width:100%;padding:10px;border-radius:10px;border:0;background:rgba(139,92,246,0.2);color:#a78bfa;font-weight:700;cursor:pointer;margin-top:6px">توليد الغلاف تلقائيا</button>
 </div>
-
-<input id="cover" placeholder="رابط الغلاف (سيظهر هنا تلقائيا)" style="font-size:12px;color:#64748b">
-<img id="preview">
 
 <label>ملخص الرواية</label>
 <textarea id="summary" placeholder="لمحة سريعة تشد القارئ..." rows="2" maxlength="300"></textarea>
 
+<!-- رفع ملف الرواية -->
+<label>ملف الرواية (بدل الكتابة) *</label>
+<div class="upload-box" onclick="document.getElementById('novelFile').click()">
+<span>📄 اضغط لرفع ملف الرواية</span>
+<p>.txt, .pdf - هيتملي تلقائيا تحت</p>
+</div>
+<input type="file" id="novelFile" accept=".txt,.pdf,.docx" hidden>
+<p id="fileInfo" style="color:#22c55e;font-size:12px;display:none"></p>
+
 <label>نص الرواية *</label>
-<textarea id="content" placeholder="ابدأ رحلتك هنا..." style="height:160px"></textarea>
+<textarea id="content" placeholder="ابدأ رحلتك هنا او ارفع ملف فوق..." style="height:200px"></textarea>
 
 <button id="btn" onclick="publish()">نشر في أرشيف المونارك 👑</button>
 <p id="msg"></p>
 </div>
 
 <script>
+// --- 1 - تسجيل الدخول Check ---
+let currentUser = JSON.parse(localStorage.getItem('monarch_user'));
+let userBar = document.getElementById('userName');
+let loginLink = document.getElementById('loginLink');
+if(currentUser){
+  userBar.textContent = `Hunter: ${currentUser.name}`;
+  loginLink.textContent = 'خروج';
+  loginLink.onclick = (e)=>{e.preventDefault(); localStorage.removeItem('monarch_user'); location.reload();}
+} else {
+  userBar.textContent = 'انت زائر - سجل دخولك';
+}
+
+// --- 2 - رفع صورة الغلاف ---
+document.getElementById('coverFile').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    document.getElementById('cover').value = reader.result; // base64
+    let img = document.getElementById('preview'); img.src = reader.result; img.style.display='block';
+  }
+  reader.readAsDataURL(file);
+});
+
+// --- 3 - رفع ملف الرواية ---
+document.getElementById('novelFile').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  document.getElementById('fileInfo').style.display='block';
+  document.getElementById('fileInfo').textContent = `تم اختيار: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  
+  const reader = new FileReader();
+  if(file.name.endsWith('.txt')){
+    reader.onload = ()=>{ document.getElementById('content').value = reader.result; }
+    reader.readAsText(file, 'UTF-8');
+  } else {
+    // للـ PDF هنقراه كـ text بسيط (لو عايز قراءة احترافية هنضيف مكتبة)
+    reader.onload = ()=>{ 
+      alert('ملفات PDF هتترفع كنص - لو النص مظهرش انسخ المحتوى يدوياً');
+      document.getElementById('content').value = reader.result.slice(0,20000); 
+    }
+    reader.readAsText(file);
+  }
+});
+
 function genCover(){
  let p=document.getElementById('aiPrompt').value.trim();
  if(!p) return alert('اوصف الغلاف الاول يا هانتر');
@@ -78,32 +144,32 @@ function genCover(){
  document.getElementById('cover').value=url;
  let img=document.getElementById('preview'); img.src=url; img.style.display='block';
 }
+
 async function publish(){
  let btn=document.getElementById('btn'), msg=document.getElementById('msg');
  let t=document.getElementById('title').value.trim();
- let authorVal=document.getElementById('author').value.trim();
- let s=document.getElementById('summary').value.trim();
- let c=document.getElementById('cover').value.trim()||'https://via.placeholder.com/600x340/1a1a2e/6d28d9?text=MONARCH';
  let contentVal=document.getElementById('content').value.trim();
  if(!t||!contentVal){msg.style.display='block';msg.style.background='rgba(239,68,68,0.1)';msg.style.color='#ef4444';msg.textContent='لازم اسم الرواية والمحتوى';return}
- btn.disabled=true; btn.textContent='يتم الفتح كبوابة...'; msg.style.display='none';
+ if(!currentUser){msg.style.display='block';msg.style.background='rgba(239,68,68,0.1)';msg.style.color='#ef4444';msg.textContent='سجل دخول الاول'; setTimeout(()=>location.href='login.html',1000); return}
+ 
+ btn.disabled=true; btn.textContent='يتم الفتح كبوابة...';
  let novel={
   title:t,
-  author:authorVal||'Hunter مجهول',
-  rank:'E', // ثابت - الكل يبدأ E
-  summary:s,
-  cover:c,
+  author:document.getElementById('author').value.trim()||currentUser.name,
+  userId: currentUser.id,
+  rank:'E',
+  summary:document.getElementById('summary').value.trim(),
+  cover:document.getElementById('cover').value.trim()||'https://via.placeholder.com/600x340/1a1a2e/6d28d9?text=MONARCH',
   content:contentVal,
   date:new Date().toISOString(),
   createdAt:Date.now(),
-  views:0,
-  likes:0
+  views:0, likes:0
  };
  try{
   await fetch('https://novels-app-2f35b-default-rtdb.firebaseio.com/novels.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(novel)});
   msg.style.display='block';msg.style.background='rgba(34,197,94,0.1)';msg.style.color='#22c55e';msg.textContent='اتنشرت كـ Rank E بنجاح ✅';
   setTimeout(()=>location.href='index.html',1200);
- }catch(e){btn.disabled=false;btn.textContent='نشر في أرشيف المونارك 👑';msg.style.display='block';msg.style.background='rgba(239,68,68,0.1)';msg.style.color='#ef4444';msg.textContent='خطأ في الاتصال بالبوابة';}
+ }catch(e){btn.disabled=false;btn.textContent='نشر في أرشيف المونارك 👑';msg.style.display='block';msg.style.background='rgba(239,68,68,0.1)';msg.style.color='#ef4444';msg.textContent='خطأ في الاتصال';}
 }
 </script>
 </body>

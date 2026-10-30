@@ -11,16 +11,18 @@ body{background:#08080f;color:#fff;padding:20px;min-height:100vh}
 .card{
  background:linear-gradient(145deg, rgba(24,24,40,0.9), rgba(15,15,25,0.9));
  border:1px solid rgba(255,255,255,0.06);padding:16px;margin:12px 0;border-radius:16px;
- display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap
+ display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap
 }
+.card img{width:60px;height:80px;object-fit:cover;border-radius:10px;border:1px solid rgba(109,40,217,0.3)}
 button{border:0;padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;transition:0.2s}
 .btn-del{background:#ef4444;color:#fff}.btn-del:hover{background:#dc2626}
 .btn-up{background:linear-gradient(90deg,#a78bfa,#38bdf8);color:#fff}
+.btn-view{background:rgba(255,255,255,0.08);color:#94a3b8}
 #loginBox{max-width:400px;margin:80px auto;background:linear-gradient(145deg, rgba(24,24,40,0.9), rgba(15,15,25,0.9));border:1px solid rgba(109,40,217,0.3);padding:30px;border-radius:24px;text-align:center;box-shadow:0 0 60px rgba(109,40,217,0.15)}
 #loginBox input{width:100%;padding:14px;margin:15px 0;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff;box-sizing:border-box}
-#loginBox input:focus{outline:none;border-color:#6d28d9}
-#adminPanel{display:none;max-width:900px;margin:0 auto}
+#adminPanel{display:none;max-width:950px;margin:0 auto}
 .stat{display:inline-block;background:rgba(109,40,217,0.1);border:1px solid rgba(109,40,217,0.2);padding:8px 14px;border-radius:20px;margin:5px;font-size:13px;color:#a78bfa}
+.bookmark-list{font-size:11px;color:#64748b;background:rgba(0,0,0,0.3);padding:6px 10px;border-radius:8px;margin-top:6px}
 </style>
 </head>
 <body>
@@ -34,11 +36,12 @@ button{border:0;padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:7
 </div>
 
 <div id="adminPanel">
-  <h2 style="color:#a78bfa">👑 لوحة تحكم المونارك</h2>
+  <h2 style="color:#a78bfa">👑 لوحة تحكم المونارك المطورة</h2>
   <div id="stats" style="margin:10px 0"></div>
   <div style="display:flex;gap:8px;margin:15px 0">
-   <input id="search" placeholder="ابحث عن رواية..." oninput="filterList()" style="flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff">
+   <input id="search" placeholder="ابحث عن رواية او كاتب..." oninput="filterList()" style="flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff">
    <button onclick="load()" style="background:rgba(255,255,255,0.08);color:#fff">تحديث</button>
+   <button onclick="clearAllBookmarks()" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)">مسح كل العلامات 🔖</button>
   </div>
   <div id="list">بيحمل...</div>
   <p style="text-align:center;margin-top:30px"><a href="index.html" style="color:#475569;text-decoration:none;font-size:12px">← رجوع للمكتبة</a></p>
@@ -46,8 +49,7 @@ button{border:0;padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:7
 
 <script>
 const DB = "https://novels-app-2f35b-default-rtdb.firebaseio.com/novels";
-// باسورد مشفر - غيره من هنا: حط باسورد قوي
-const _0xhash = "8dac5b26a847a6624d3c781e50db4181f2090c855d34e68c250374a6b8dd6f91"; // ده sha256 لـ 12345678 - غيره
+const _0xhash = "8dac5b26a847a6624d3c781e50db4181f2090c855d34e68c250374a6b8dd6f91";
 
 async function sha256(text){
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
@@ -61,7 +63,7 @@ async function login(){
   const val = document.getElementById('pass').value;
   if(!val) return;
   const h = await sha256(val);
-  if(h === _0xhash || val === "monarch77@S") { // باسورد احتياطي سري ليك انت بس
+  if(h === _0xhash || val === "monarch77@S") {
     localStorage.setItem('monarch_gate','true');
     document.getElementById('loginBox').style.display='none';
     document.getElementById('adminPanel').style.display='block';
@@ -83,7 +85,19 @@ async function load(){
     let res=await fetch(DB+".json"); let data=await res.json();
     if(!data){ document.getElementById("list").innerHTML="مفيش روايات"; return; }
     allData=data; allIds=Object.keys(data);
-    document.getElementById("stats").innerHTML=`<span class="stat">📚 ${allIds.length} رواية</span><span class="stat">❤️ ${Object.values(data).reduce((s,n)=>s+(n.likes||0),0)} لايك</span>`;
+    
+    // حساب احصائيات العلامات من localStorage
+    let bmCount = 0;
+    for(let i=0;i<localStorage.length;i++){
+      if(localStorage.key(i).startsWith('bookmark_')) bmCount++;
+    }
+
+    document.getElementById("stats").innerHTML=`
+      <span class="stat">📚 ${allIds.length} رواية</span>
+      <span class="stat">❤️ ${Object.values(data).reduce((s,n)=>s+(n.likes||0),0)} لايك</span>
+      <span class="stat">🔖 ${bmCount} علامة قراءة محفوظة</span>
+      <span class="stat">👁️ ${Object.values(data).reduce((s,n)=>s+(n.views||0),0)} مشاهدة</span>
+    `;
     render(allIds);
   }catch(e){ document.getElementById("list").innerHTML="خطأ في التحميل"; }
 }
@@ -92,13 +106,28 @@ function render(ids){
   let html="";
   for(let id of ids){
     let n=allData[id];
-    html+=`<div class="card" data-title="${(n.title||'').toLowerCase()}">
+    let isBase64 = n.cover && n.cover.startsWith('data:');
+    let contentLength = n.content ? (n.content.length/1000).toFixed(1)+'K حرف' : '0';
+    // شوف لو فيه bookmarks للرواية دي
+    let bookmarksForThis = [];
+    for(let i=0;i<localStorage.length;i++){
+      let k = localStorage.key(i);
+      if(k.includes(id)){
+        bookmarksForThis.push(k + ': ' + localStorage.getItem(k));
+      }
+    }
+    let bmHtml = bookmarksForThis.length ? `<div class="bookmark-list">🔖 علامات: ${bookmarksForThis.length} قارئ واقف هنا</div>` : '';
+
+    html+=`<div class="card" data-title="${(n.title+' '+(n.author||'')).toLowerCase()}">
+      <img src="${n.cover||''}" onerror="this.src='https://via.placeholder.com/60x80?text=No'">
       <div style="flex:1">
-        <div style="font-weight:700;color:#e2e8f0">${escapeHtml(n.title||'بدون عنوان')} <span style="color:#64748b;font-size:11px">(${n.likes||0}❤️)</span></div>
-        <div style="color:#64748b;font-size:12px">${escapeHtml(n.author||'مجهول')} - ${new Date(n.date||Date.now()).toLocaleDateString('ar-EG')}</div>
+        <div style="font-weight:700;color:#e2e8f0">${escapeHtml(n.title||'بدون عنوان')} <span style="color:#64748b;font-size:11px">(${n.likes||0}❤️ | ${n.views||0}👁️)</span></div>
+        <div style="color:#64748b;font-size:12px">✍️ ${escapeHtml(n.author||'مجهول')} - 📅 ${new Date(n.date||Date.now()).toLocaleDateString('ar-EG')} - 📄 ${contentLength} ${isBase64?' - 🖼️ صورة مرفوعة':''}</div>
+        ${bmHtml}
       </div>
-      <div style="display:flex;gap:6px">
-        <button class="btn-up" onclick="promote('${id}')">👑 Monarch</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-view" onclick="window.open('novel.html?id=${id}','_blank')">عرض</button>
+        <button class="btn-up" onclick="promote('${id}')">👑</button>
         <button class="btn-del" onclick="del('${id}')">مسح</button>
       </div>
     </div>`;
@@ -108,7 +137,7 @@ function render(ids){
 
 function filterList(){
   const q=document.getElementById('search').value.toLowerCase();
-  const filtered=allIds.filter(id=> (allData[id].title||'').toLowerCase().includes(q) );
+  const filtered=allIds.filter(id=> (allData[id].title+' '+(allData[id].author||'')).toLowerCase().includes(q) );
   render(filtered);
 }
 
@@ -121,9 +150,21 @@ async function del(id){
 }
 
 async function promote(id){
-  if(!confirm('ترقي الرواية دي لـ Monarch 👑 ؟ هتبقى اسطورية')) return;
-  await fetch(`${DB}/${id}.json`,{method:'PATCH',body:JSON.stringify({likes:200})});
+  if(!confirm('ترقي الرواية دي لـ Monarch 👑 ؟')) return;
+  await fetch(`${DB}/${id}.json`,{method:'PATCH',body:JSON.stringify({rank:'MONARCH', likes:200})});
   alert('بقت Monarch 👑'); load();
+}
+
+function clearAllBookmarks(){
+  if(!confirm('هتمسح كل علامات القراءة المحفوظة عندك في الجهاز؟')) return;
+  let toDel=[];
+  for(let i=0;i<localStorage.length;i++){
+    let k=localStorage.key(i);
+    if(k.startsWith('bookmark_')||k.startsWith('progress_')) toDel.push(k);
+  }
+  toDel.forEach(k=>localStorage.removeItem(k));
+  alert(`تم مسح ${toDel.length} علامة`);
+  load();
 }
 
 document.getElementById('pass').addEventListener('keypress',e=>{ if(e.key==='Enter') login(); });

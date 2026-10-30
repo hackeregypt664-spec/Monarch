@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta name="google-site-verification" content="eLYOm7t0gzpeeTofQpnsewvgEco01W_q-G4lhokzON4" />
+<meta name="google-site-verification" content="eLYOm7t0gzpeeTofQpnsewvgEco01W_q-G4lhokzON4" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MONARCH - عالم الروايات</title>
@@ -24,6 +24,10 @@ body{background:#08080f !important}
 .rank-badge{position:absolute;top:12px;left:12px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;z-index:2}
 .rank-S{background:#facc15;color:#000}.rank-Monarch{background:linear-gradient(90deg,#a78bfa,#38bdf8);color:#fff}.rank-A{background:#ef4444;color:#fff}.rank-B{background:#8b5cf6;color:#fff}.rank-C{background:#38bdf8;color:#000}.rank-D{background:#22c55e;color:#000}.rank-E{background:rgba(255,255,255,0.15);color:#cbd5e1}
 .meta-row{display:flex;justify-content:space-between;color:#64748b;font-size:12px;margin:8px 0}
+.continue-section{background:linear-gradient(135deg, rgba(109,40,217,0.15), rgba(56,189,248,0.1));border:1px solid rgba(109,40,217,0.3);border-radius:20px;padding:16px;margin:20px 0;display:none}
+.progress-line{height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,#6d28d9,#38bdf8);transition:0.3s}
+.user-top{display:flex;justify-content:space-between;align-items:center;max-width:1200px;margin:0 auto;padding:10px 20px;color:#94a3b8;font-size:13px}
 </style>
 </head>
 <body>
@@ -35,12 +39,22 @@ body{background:#08080f !important}
 </div>
 
 <div id="mainSite" class="main-site" style="display:none">
+    <div class="user-top">
+      <span id="userHello">Hunter زائر</span>
+      <div style="display:flex;gap:8px">
+        <a href="login.html" id="loginBtn" style="color:#a78bfa;text-decoration:none;background:rgba(109,40,217,0.1);padding:6px 12px;border-radius:20px">تسجيل دخول</a>
+        <a href="publish.html" style="color:#fff;text-decoration:none;background:linear-gradient(90deg,#6d28d9,#38bdf8);padding:6px 14px;border-radius:20px">+ انشر</a>
+      </div>
+    </div>
+
     <div class="container" style="max-width:1200px;margin:0 auto;padding:20px">
         <h1 class="title">MONARCH ARCHIVE</h1>
         <p style="text-align:center;color:#475569;font-size:13px;margin-bottom:15px">أرشيف الهانترز - الرانك بيعلى تلقائيا باللايكات</p>
         
-        <div style="text-align:center; margin-bottom:15px;">
-            <a href="publish.html" class="open-btn" style="text-decoration:none;display:inline-block">+ انشر روايتك</a>
+        <!-- قسم اكمل القراءة -->
+        <div id="continueSection" class="continue-section">
+          <h3 style="color:#a78bfa;margin:0 0 12px 0">📖 اكمل القراءة <span style="color:#64748b;font-size:12px">- انت وقفت هنا</span></h3>
+          <div id="continueList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
         </div>
 
         <div class="filters">
@@ -63,6 +77,7 @@ var portal = document.getElementById('portalScreen');
 var main = document.getElementById('mainSite');
 var container = document.getElementById('novelsContainer');
 var allNovels = [];
+var currentUser = JSON.parse(localStorage.getItem('monarch_user'));
 
 function escapeHtml(text){
     if(!text) return '';
@@ -71,7 +86,6 @@ function escapeHtml(text){
     return div.innerHTML;
 }
 
-// النظام الجديد: الرانك اوتوماتيك من الليكات
 function calcRank(likes){
  likes = likes||0;
  if(likes >= 200) return 'Monarch';
@@ -81,6 +95,40 @@ function calcRank(likes){
  if(likes >= 10) return 'C';
  if(likes >= 5) return 'D';
  return 'E';
+}
+
+function checkUser(){
+  if(currentUser){
+    document.getElementById('userHello').innerText = '⚔️ Hunter: ' + currentUser.name;
+    document.getElementById('loginBtn').innerText = 'خروج';
+    document.getElementById('loginBtn').onclick = (e)=>{e.preventDefault(); localStorage.removeItem('monarch_user'); location.reload();}
+  }
+}
+
+function loadContinueReading(){
+  let list = document.getElementById('continueList');
+  let section = document.getElementById('continueSection');
+  let html = '';
+  let count = 0;
+  for(let i=0;i<localStorage.length;i++){
+    let key = localStorage.key(i);
+    if(key.startsWith('progress_')){
+      let id = key.replace('progress_','').replace(currentUser?currentUser.id+'_':'','');
+      let progress = localStorage.getItem(key);
+      let novel = allNovels.find(n=>n._id===id);
+      if(novel && parseInt(progress)>2 && parseInt(progress)<98){
+        count++;
+        html+=`<div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center">
+          <img src="${novel.cover}" style="width:45px;height:60px;object-fit:cover;border-radius:8px">
+          <div style="flex:1"><div style="color:#e2e8f0;font-size:13px;font-weight:700">${escapeHtml(novel.title).substring(0,20)}</div>
+          <div class="progress-line"><div class="progress-fill" style="width:${progress}%"></div></div>
+          <div style="color:#a78bfa;font-size:11px">${progress}% - اكمل</div></div>
+          <a href="read.html?id=${novel._id}" style="background:#6d28d9;color:#fff;padding:6px 10px;border-radius:8px;text-decoration:none;font-size:12px">كمل</a>
+        </div>`;
+      }
+    }
+  }
+  if(count>0){ section.style.display='block'; list.innerHTML=html; }
 }
 
 async function loadNovels(){
@@ -94,8 +142,9 @@ async function loadNovels(){
         allNovels = [];
         for(var id in data){ data[id]._id=id; data[id].realRank=calcRank(data[id].likes); allNovels.push(data[id]); }
         render(allNovels);
+        loadContinueReading();
     } catch(e){
-        container.innerHTML = '<p style="color:#ef4444;text-align:center;grid-column:1/-1">حصل خطأ في فتح البوابة، جرب تاني</p>';
+        container.innerHTML = '<p style="color:#ef4444;text-align:center;grid-column:1/-1">حصل خطأ في فتح البوابة</p>';
     }
 }
 
@@ -104,20 +153,26 @@ function render(list){
     var html='';
     for(var i=0;i<list.length;i++){
         var novel=list[i];
-        var cover=novel.cover?escapeHtml(novel.cover):'https://via.placeholder.com/300x180/1a1a2e/6d28d9?text=MONARCH';
+        var cover=novel.cover||'https://via.placeholder.com/300x180/1a1a2e/6d28d9?text=MONARCH';
         var title=escapeHtml(novel.title);
         var summary=escapeHtml((novel.summary||'بدون ملخص').substring(0,90));
         var author=escapeHtml(novel.author||'مجهول');
         var rank=novel.realRank;
         var likes=novel.likes||0;
         var views=novel.views||0;
+        // شوف التقدم
+        let progKey = `progress_${currentUser?currentUser.id+'_':''}${novel._id}`;
+        let prog = localStorage.getItem(progKey);
+        let progHtml = prog ? `<div class="progress-line"><div class="progress-fill" style="width:${prog}%"></div></div><div style="color:#a78bfa;font-size:11px">📖 ${prog}%</div>` : '';
+        
         html+='<div class="chapter-card">';
         html+='<span class="rank-badge rank-'+rank+'">'+rank+'</span>';
         html+='<img src="'+cover+'" onerror="this.src=\'https://via.placeholder.com/300x180/1a1a2e/6d28d9?text=MONARCH\'" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:10px" />';
         html+='<h3 style="color:#e2e8f0;font-size:16px;margin:5px 0">'+title+'</h3>';
         html+='<p style="color:#64748b;font-size:13px;height:36px;overflow:hidden">'+summary+'...</p>';
         html+='<div class="meta-row"><span>✍️ '+author+'</span><span>❤️ '+likes+' | 👁️ '+views+'</span></div>';
-        html+='<a href="read.html?id='+encodeURIComponent(novel._id)+'" class="open-btn" style="display:block;text-align:center;text-decoration:none;padding:10px;margin-top:10px;font-size:13px">ابدأ القراءة ←</a>';
+        html+=progHtml;
+        html+='<a href="read.html?id='+encodeURIComponent(novel._id)+'" class="open-btn" style="display:block;text-align:center;text-decoration:none;padding:10px;margin-top:10px;font-size:13px">'+(prog?'اكمل القراءة '+prog+'% ←':'ابدأ القراءة ←')+'</a>';
         html+='</div>';
     }
     container.innerHTML=html;
@@ -142,8 +197,11 @@ function sortBy(type){
 btn.onclick=function(){
     portal.style.transition='0.8s';
     portal.style.opacity='0';
-    setTimeout(function(){ portal.style.display='none'; main.style.display='block'; loadNovels(); },800);
+    setTimeout(function(){ portal.style.display='none'; main.style.display='block'; checkUser(); loadNovels(); },800);
 };
+// لو البوابة اتفتحت قبل كده
+if(localStorage.getItem('gate_opened')){ portal.style.display='none'; main.style.display='block'; checkUser(); loadNovels(); }
+btn.addEventListener('click',()=>localStorage.setItem('gate_opened','1'));
 </script>
 </body>
 </html>

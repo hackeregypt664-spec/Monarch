@@ -1,4 +1,4 @@
-/* ========== MONARCH PREMIUM - ROQAN STYLE ========== */
+/* ========== MONARCH PREMIUM - ROQAN STYLE + BOOKMARKS ========== */
 * {
     margin: 0;
     padding: 0;
@@ -28,216 +28,73 @@ body {
     z-index: 100;
     border-bottom: 1px solid rgba(109,40,217,0.15);
 }
-
-.hac {
-    width: 44px;
-    height: 44px;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 1px solid rgba(109,40,217,0.3);
-}
-
-.shadow a {
-    color: #a78bfa;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 700;
-    transition: 0.2s;
-}
+.hac { width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(109,40,217,0.3); }
+.shadow a { color: #a78bfa; text-decoration: none; font-size: 16px; font-weight: 700; transition: 0.2s; }
 .shadow a:hover { color: #fff; text-shadow: 0 0 10px #a78bfa; }
 
 /* ========== المحتوى ========== */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
-}
-
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
 .title {
-    color: #a78bfa; 
-    font-size: 36px;
-    font-weight: 900;
-    margin: 0 auto 30px auto;  
-    width: fit-content;        
-    text-align: center;
-    letter-spacing: 1px;
-    display: block;            
-    text-shadow: 0 0 20px rgba(167,139,250,0.4);
-    animation: glow 2.5s ease-in-out infinite alternate;
+    color: #a78bfa; font-size: 36px; font-weight: 900; margin: 0 auto 30px auto;  
+    width: fit-content; text-align: center; letter-spacing: 1px; display: block;            
+    text-shadow: 0 0 20px rgba(167,139,250,0.4); animation: glow 2.5s ease-in-out infinite alternate;
 }
 
-/* ========== كروت الروايات - رايقة ========== */
-.chapters {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-
+/* ========== كروت الروايات ========== */
+.chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 .chapter-card {
     background: linear-gradient(145deg, rgba(24,24,40,0.9), rgba(15,15,25,0.9));
-    padding: 16px;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.06);
+    padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.06);
     box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
-    transition: all 0.3s ease;
-    position: relative;
+    transition: all 0.3s ease; position: relative;
 }
-
-.chapter-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(109,40,217,0.4);
-    box-shadow: 0 12px 30px rgba(109,40,217,0.2);
-}
-
-.chapter-card h3 {
-    margin: 10px 0 8px 0;
-    color: #e2e8f0;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1.4;
-}
-
-.chapter-card p {
-    color: #94a3b8;
-    margin: 0 0 14px 0;
-    font-size: 14px;
-    line-height: 1.6;
-    /* بديل رايق من غير -webkit- غلط */
-    display: block;
-    max-height: 4.8em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.chapter-card img {
-    border-radius: 12px !important;
-    border: 1px solid rgba(255,255,255,0.06) !important;
-}
+.chapter-card:hover { transform: translateY(-5px); border-color: rgba(109,40,217,0.4); box-shadow: 0 12px 30px rgba(109,40,217,0.2); }
+.chapter-card h3 { margin: 10px 0 8px 0; color: #e2e8f0; font-size: 18px; font-weight: 700; line-height: 1.4; }
+.chapter-card p { color: #94a3b8; margin: 0 0 14px 0; font-size: 14px; line-height: 1.6; max-height: 4.8em; overflow: hidden; text-overflow: ellipsis; }
+.chapter-card img { border-radius: 12px !important; border: 1px solid rgba(255,255,255,0.06) !important; }
 
 .read-btn {
-    background: linear-gradient(90deg, #6d28d9, #38bdf8);
-    color: #fff;
-    padding: 10px 18px;
-    text-decoration: none;
-    border-radius: 10px;
-    display: inline-block;
-    font-weight: 700;
-    font-size: 14px;
-    border: 0;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    background: linear-gradient(90deg, #6d28d9, #38bdf8); color: #fff; padding: 10px 18px;
+    text-decoration: none; border-radius: 10px; display: inline-block; font-weight: 700;
+    font-size: 14px; border: 0; cursor: pointer; transition: all 0.3s ease;
     box-shadow: 0 0 15px rgba(109,40,217,0.3);
 }
+.read-btn:hover { background: linear-gradient(90deg, #7c3aed, #0ea5e9); transform: translateY(-2px); box-shadow: 0 0 25px rgba(109,40,217,0.5); }
 
-.read-btn:hover {
-    background: linear-gradient(90deg, #7c3aed, #0ea5e9);
-    transform: translateY(-2px);
-    box-shadow: 0 0 25px rgba(109,40,217,0.5);
-}
+/* ========== اضافات جديدة - BOOKMARK & PROGRESS ========== */
+#progress-bar{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,#6d28d9,#38bdf8);width:0%;z-index:9999;box-shadow:0 0 10px #6d28d9;transition:width 0.2s}
+.progress-line{height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,#6d28d9,#38bdf8);transition:0.3s}
+.continue-section{background:linear-gradient(135deg, rgba(109,40,217,0.15), rgba(56,189,248,0.1));border:1px solid rgba(109,40,217,0.3);border-radius:20px;padding:16px;margin:20px 0}
+.upload-box{border:2px dashed rgba(109,40,217,0.4);border-radius:16px;padding:20px;text-align:center;background:rgba(109,40,217,0.05);margin:12px 0;cursor:pointer;transition:0.3s}
+.upload-box:hover{background:rgba(109,40,217,0.1);border-color:#a78bfa}
+.upload-box span{color:#a78bfa;font-size:13px;font-weight:700}
+.upload-box p{color:#64748b;font-size:11px;margin:5px 0 0 0}
+#bookmark-fab{position:fixed;bottom:25px;left:25px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border:0;border-radius:50%;width:56px;height:56px;font-size:22px;cursor:pointer;box-shadow:0 0 20px rgba(109,40,217,0.5);z-index:99;transition:0.2s}
+#bookmark-fab:hover{transform:scale(1.1)}
+.user-top{display:flex;justify-content:space-between;align-items:center;max-width:1200px;margin:0 auto;padding:10px 20px;color:#94a3b8;font-size:13px}
+.rank-badge{position:absolute;top:12px;left:12px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;z-index:2}
+.rank-S{background:#facc15;color:#000}.rank-Monarch{background:linear-gradient(90deg,#a78bfa,#38bdf8);color:#fff}.rank-A{background:#ef4444;color:#fff}.rank-B{background:#8b5cf6;color:#fff}.rank-C{background:#38bdf8;color:#000}.rank-D{background:#22c55e;color:#000}.rank-E{background:rgba(255,255,255,0.15);color:#cbd5e1}
 
 /* ========== الهيرو ========== */
-.hero {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-    margin-bottom: 40px;
-    padding: 24px;
-    background: linear-gradient(145deg, rgba(24,24,40,0.6), rgba(15,15,25,0.6));
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 20px;
-}
-
-.hero-text {
-    color: #cbd5e1;  
-    font-size: 20px;
-    font-weight: 600;
-    flex: 1;
-}
-
-.hero-img {
-    width: 160px;
-    height: 160px;
-    border-radius: 16px;
-    object-fit: cover;
-    border: 1px solid rgba(109,40,217,0.3);
-}
+.hero { display: flex; align-items: center; justify-content: space-between; gap: 30px; margin-bottom: 40px; padding: 24px; background: linear-gradient(145deg, rgba(24,24,40,0.6), rgba(15,15,25,0.6)); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; }
+.hero-text { color: #cbd5e1; font-size: 20px; font-weight: 600; flex: 1; }
+.hero-img { width: 160px; height: 160px; border-radius: 16px; object-fit: cover; border: 1px solid rgba(109,40,217,0.3); }
 
 /* ========== شاشة البوابة ========== */
-.portal-screen {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.portal-screen h1 {
-    color: #fff;
-    margin-bottom: 24px;
-    font-size: 22px;
-    letter-spacing: 4px;
-    font-weight: 900;
-    text-shadow: 0 0 20px rgba(109,40,217,0.6);
-    text-align: center;
-}
-
-.portal {
-    width: 300px;
-    height: 300px;
-    background-image: url('https://static0.cbrimages.com/wordpress/wp-content/uploads/2024/04/gate-solo-leveling-1.jpeg?q=70&fit=crop&w=825&dpr=1.png'); 
-    background-size: cover;
-    background-position: center;
-    border-radius: 50%;
-    box-shadow: 0 0 60px rgba(109,40,217,0.7), 0 0 120px rgba(56,189,248,0.3);
-    animation: vortexRotate 4s linear infinite;
-}
-
-@keyframes vortexRotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(-360deg); }
-}
-
-.open-btn {
-    margin-top: 40px;
-    padding: 14px 48px;
-    background: linear-gradient(90deg, #6d28d9, #38bdf8);
-    color: #fff;
-    font-size: 18px;
-    font-weight: 900;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 0 25px rgba(109,40,217,0.5);
-    transition: 0.3s ease;
-    letter-spacing: 1px;
-}
-
-.open-btn:hover {
-    background: linear-gradient(90deg, #7c3aed, #0ea5e9);
-    box-shadow: 0 0 35px rgba(109,40,217,0.7);
-    transform: translateY(-2px) scale(1.03);
-}
+.portal-screen { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+.portal-screen h1 { color: #fff; margin-bottom: 24px; font-size: 22px; letter-spacing: 4px; font-weight: 900; text-shadow: 0 0 20px rgba(109,40,217,0.6); text-align: center; }
+.portal { width: 300px; height: 300px; background-image: url('https://static0.cbrimages.com/wordpress/wp-content/uploads/2024/04/gate-solo-leveling-1.jpeg?q=70&fit=crop&w=825&dpr=1.png'); background-size: cover; background-position: center; border-radius: 50%; box-shadow: 0 0 60px rgba(109,40,217,0.7), 0 0 120px rgba(56,189,248,0.3); animation: vortexRotate 4s linear infinite; }
+@keyframes vortexRotate { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+.open-btn { margin-top: 40px; padding: 14px 48px; background: linear-gradient(90deg, #6d28d9, #38bdf8); color: #fff; font-size: 18px; font-weight: 900; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 0 25px rgba(109,40,217,0.5); transition: 0.3s ease; letter-spacing: 1px; }
+.open-btn:hover { background: linear-gradient(90deg, #7c3aed, #0ea5e9); box-shadow: 0 0 35px rgba(109,40,217,0.7); transform: translateY(-2px) scale(1.03); }
 
 /* ========== انيميشنز ========== */
-#story-text {
-    animation: fadeInUp 0.8s ease;
-}
+#story-text { animation: fadeInUp 0.8s ease; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes glow { from { text-shadow: 0 0 10px rgba(167,139,250,0.3); } to { text-shadow: 0 0 25px rgba(167,139,250,0.6), 0 0 40px rgba(56,189,248,0.3); } }
 
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes glow {
-    from { text-shadow: 0 0 10px rgba(167,139,250,0.3); }
-    to { text-shadow: 0 0 25px rgba(167,139,250,0.6), 0 0 40px rgba(56,189,248,0.3); }
-}
-
-/* ========== سكرول بار رايق ========== */
+/* ========== سكرول بار ========== */
 ::-webkit-scrollbar{width:8px}
 ::-webkit-scrollbar-track{background:#08080f}
 ::-webkit-scrollbar-thumb{background:linear-gradient(#6d28d9,#38bdf8);border-radius:10px}
