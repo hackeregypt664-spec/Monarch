@@ -51,7 +51,6 @@ body{background:#08080f !important}
         <h1 class="title">MONARCH ARCHIVE</h1>
         <p style="text-align:center;color:#475569;font-size:13px;margin-bottom:15px">أرشيف الهانترز - الرانك بيعلى تلقائيا باللايكات</p>
         
-        <!-- قسم اكمل القراءة -->
         <div id="continueSection" class="continue-section">
           <h3 style="color:#a78bfa;margin:0 0 12px 0">📖 اكمل القراءة <span style="color:#64748b;font-size:12px">- انت وقفت هنا</span></h3>
           <div id="continueList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
@@ -85,7 +84,6 @@ function escapeHtml(text){
     div.textContent = text;
     return div.innerHTML;
 }
-
 function calcRank(likes){
  likes = likes||0;
  if(likes >= 200) return 'Monarch';
@@ -96,7 +94,6 @@ function calcRank(likes){
  if(likes >= 5) return 'D';
  return 'E';
 }
-
 function checkUser(){
   if(currentUser){
     document.getElementById('userHello').innerText = '⚔️ Hunter: ' + currentUser.name;
@@ -104,7 +101,6 @@ function checkUser(){
     document.getElementById('loginBtn').onclick = (e)=>{e.preventDefault(); localStorage.removeItem('monarch_user'); location.reload();}
   }
 }
-
 function loadContinueReading(){
   let list = document.getElementById('continueList');
   let section = document.getElementById('continueSection');
@@ -130,7 +126,6 @@ function loadContinueReading(){
   }
   if(count>0){ section.style.display='block'; list.innerHTML=html; }
 }
-
 async function loadNovels(){
     try{
         var res = await fetch('https://novels-app-2f35b-default-rtdb.firebaseio.com/novels.json');
@@ -147,7 +142,6 @@ async function loadNovels(){
         container.innerHTML = '<p style="color:#ef4444;text-align:center;grid-column:1/-1">حصل خطأ في فتح البوابة</p>';
     }
 }
-
 function render(list){
     if(list.length==0){ container.innerHTML='<p style="color:#475569;text-align:center;grid-column:1/-1">مفيش روايات في التصنيف ده</p>'; return; }
     var html='';
@@ -160,11 +154,9 @@ function render(list){
         var rank=novel.realRank;
         var likes=novel.likes||0;
         var views=novel.views||0;
-        // شوف التقدم
         let progKey = `progress_${currentUser?currentUser.id+'_':''}${novel._id}`;
         let prog = localStorage.getItem(progKey);
         let progHtml = prog ? `<div class="progress-line"><div class="progress-fill" style="width:${prog}%"></div></div><div style="color:#a78bfa;font-size:11px">📖 ${prog}%</div>` : '';
-        
         html+='<div class="chapter-card">';
         html+='<span class="rank-badge rank-'+rank+'">'+rank+'</span>';
         html+='<img src="'+cover+'" onerror="this.src=\'https://via.placeholder.com/300x180/1a1a2e/6d28d9?text=MONARCH\'" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:10px" />';
@@ -177,14 +169,12 @@ function render(list){
     }
     container.innerHTML=html;
 }
-
 function filterRank(r){
     document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('f-'+r).classList.add('active');
     if(r=='all') render(allNovels);
     else render(allNovels.filter(n=>n.realRank==r));
 }
-
 function sortBy(type){
     document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('f-'+type).classList.add('active');
@@ -194,14 +184,17 @@ function sortBy(type){
     render(sorted);
 }
 
+// هنا التعديل المهم - البوابة تظهر كل مرة
 btn.onclick=function(){
     portal.style.transition='0.8s';
     portal.style.opacity='0';
-    setTimeout(function(){ portal.style.display='none'; main.style.display='block'; checkUser(); loadNovels(); },800);
+    setTimeout(function(){ 
+        portal.style.display='none'; 
+        main.style.display='block'; 
+        checkUser(); 
+        loadNovels(); 
+    },800);
 };
-// لو البوابة اتفتحت قبل كده
-if(localStorage.getItem('gate_opened')){ portal.style.display='none'; main.style.display='block'; checkUser(); loadNovels(); }
-btn.addEventListener('click',()=>localStorage.setItem('gate_opened','1'));
 </script>
 </body>
 </html>
