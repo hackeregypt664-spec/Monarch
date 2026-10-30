@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دخول الهانترز - Monarch</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+*{font-family:'Cairo', sans-serif;box-sizing:border-box}
+body{background:#08080f;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px}
+.card{background:linear-gradient(145deg, rgba(24,24,40,0.9), rgba(15,15,25,0.9));padding:30px;border-radius:24px;width:100%;max-width:400px;border:1px solid rgba(109,40,217,0.3);box-shadow:0 0 60px rgba(109,40,217,0.15);text-align:center}
+h2{color:#a78bfa;margin:0 0 10px 0}
+p{color:#64748b;font-size:13px;margin-bottom:15px}
+input{width:100%;padding:14px;margin:8px 0;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff}
+input:focus{outline:none;border-color:#6d28d9}
+button{width:100%;padding:14px;background:linear-gradient(90deg,#6d28d9,#38bdf8);border:0;border-radius:12px;color:#fff;font-weight:900;font-size:16px;margin-top:12px;cursor:pointer;box-shadow:0 0 20px rgba(109,40,217,0.4)}
+a{color:#475569;text-decoration:none;font-size:12px;display:block;margin-top:15px}
+</style>
+</head>
+<body>
+<div class="card">
+<h2>🔐 دخول الـ Hunters</h2>
+<p>سجل عشان تحفظ رواياتك وعلامات القراءة</p>
+<input id="name" placeholder="اسمك كـ Hunter *" />
+<input id="email" type="email" placeholder="الايميل *" />
+<button onclick="login()">دخول الأرشيف 👑</button>
+<a href="index.html">← رجوع للمكتبة</a>
+</div>
+<script>
+function login(){
+ let n=document.getElementById('name').value.trim();
+ let e=document.getElementById('email').value.trim();
+ if(!n||!e) return alert('اكتب اسمك والايميل يا هانتر');
+ let user={id:Date.now(), name:n, email:e, time: Date.now()};
+ localStorage.setItem('monarch_user', JSON.stringify(user));
+ alert('اهلا '+n+' 👑');
+ location.href='publish.html';
+}
+</script>
+</body>
+</html>
