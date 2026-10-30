@@ -15,48 +15,71 @@ input{width:100%;padding:14px;margin:8px 0;border-radius:12px;border:1px solid r
 input:focus{outline:none;border-color:#6d28d9}
 button{width:100%;padding:14px;background:linear-gradient(90deg,#6d28d9,#38bdf8);border:0;border-radius:12px;color:#fff;font-weight:900;font-size:16px;margin-top:12px;cursor:pointer;box-shadow:0 0 20px rgba(109,40,217,0.4)}
 a{color:#475569;text-decoration:none;font-size:12px;display:block;margin-top:15px}
+#newFields{transition:0.3s}
 </style>
 </head>
 <body>
 <div class="card">
 <h2>🔐 دخول الـ Hunters</h2>
-<p>سجل عشان تحفظ رواياتك وعلامات القراءة</p>
-<input id="name" placeholder="اسمك كـ Hunter *" />
-<input id="email" type="email" placeholder="الايميل *" />
+<p id="subText">اكتب ايميلك وهنعرف لو انت هانتر قديم ولا جديد</p>
+<input id="email" type="email" placeholder="الايميل *" oninput="checkEmail()" />
 <input id="pass" type="password" placeholder="كلمة السر *" />
+<div id="newFields">
+<input id="name" placeholder="اسمك كـ Hunter *" />
 <input id="pass2" type="password" placeholder="تأكيد كلمة السر *" />
-<button onclick="login()">دخول الأرشيف 👑</button>
+</div>
+<button id="mainBtn" onclick="login()">دخول الأرشيف 👑</button>
 <a href="index.html">← رجوع للمكتبة</a>
 <p id="msg" style="color:#ef4444;font-size:12px;margin-top:10px"></p>
 </div>
 <script>
+function checkEmail(){
+ let e=document.getElementById('email').value.trim();
+ let users=JSON.parse(localStorage.getItem('monarch_users')||'{}');
+ let newFields=document.getElementById('newFields');
+ let sub=document.getElementById('subText');
+ let btn=document.getElementById('mainBtn');
+ if(users[e]){
+   newFields.style.display='none';
+   sub.innerText='👋 اهلا بعودتك يا هانتر - اكتب باسوردك';
+   sub.style.color='#a78bfa';
+   btn.innerText='دخول 👑';
+ } else {
+   newFields.style.display='block';
+   sub.innerText=e ? '✨ هانتر جديد - كمل بياناتك' : 'اكتب ايميلك وهنعرف لو انت هانتر قديم ولا جديد';
+   sub.style.color=e ? '#38bdf8' : '#64748b';
+   btn.innerText='انشاء حساب 👑';
+ }
+}
 function login(){
  let n=document.getElementById('name').value.trim();
  let e=document.getElementById('email').value.trim();
  let p=document.getElementById('pass').value.trim();
  let p2=document.getElementById('pass2').value.trim();
  let msg=document.getElementById('msg');
- if(!n||!e||!p||!p2) return msg.innerText='املا كل البيانات يا هانتر';
- if(p!==p2) return msg.innerText='كلمتين السر مش زي بعض';
- if(p.length<4) return msg.innerText='كلمة السر قصيرة - 4 حروف على الاقل';
- 
+ if(!e||!p) return msg.innerText='اكتب الايميل والباسورد';
  let users=JSON.parse(localStorage.getItem('monarch_users')||'{}');
- // لو مسجل قبل كده - يخش
  if(users[e]){
+   // قديم - دخول بس
    if(users[e].pass!==p) return msg.innerText='كلمة السر غلط';
    localStorage.setItem('monarch_user', JSON.stringify(users[e]));
    alert('اهلا بعودتك '+users[e].name+' 👑');
    location.href='index.html';
-   return;
+ } else {
+   // جديد - لازم اسم وتأكيد
+   if(!n) return msg.innerText='اكتب اسمك كـ Hunter';
+   if(!p2) return msg.innerText='اكد كلمة السر';
+   if(p!==p2) return msg.innerText='كلمتين السر مش زي بعض';
+   if(p.length<4) return msg.innerText='الباسورد قصير';
+   let user={id:Date.now(), name:n, email:e, pass:p, time: Date.now()};
+   users[e]=user;
+   localStorage.setItem('monarch_users', JSON.stringify(users));
+   localStorage.setItem('monarch_user', JSON.stringify(user));
+   alert('اهلا '+n+' 👑 تم انشاء حسابك');
+   location.href='index.html';
  }
- // جديد - يسجل
- let user={id:Date.now(), name:n, email:e, pass:p, time: Date.now()};
- users[e]=user;
- localStorage.setItem('monarch_users', JSON.stringify(users));
- localStorage.setItem('monarch_user', JSON.stringify(user));
- alert('اهلا '+n+' 👑 تم انشاء حسابك');
- location.href='index.html';
 }
+checkEmail();
 </script>
 </body>
 </html>
