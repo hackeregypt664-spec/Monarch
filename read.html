@@ -3,150 +3,127 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>قراءة - Monarch</title>
+<title>انشر روايتك - MONARCH</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 *{font-family:'Cairo',sans-serif;box-sizing:border-box}
-body{background:#08080f;color:#fff;margin:0}
-#progress-bar{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,#6d28d9,#38bdf8);width:0%;z-index:9999}
-.top-bar{position:sticky;top:4px;z-index:10;background:rgba(8,8,15,0.9);backdrop-filter:blur(20px);padding:12px;border-bottom:1px solid rgba(109,40,217,0.15);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
-#cover{width:230px;height:330px;object-fit:cover;border-radius:20px;border:1px solid rgba(109,40,217,0.3);margin:20px auto;display:block}
-#story-text p{font-size:19px;line-height:2.15;color:#d1d5db;margin:18px 0;text-align:justify;padding:0 8px}
-.rank-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(109,40,217,0.15);border:1px solid rgba(109,40,217,0.3);color:#a78bfa}
-#bookmark-fab{position:fixed;bottom:25px;left:25px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border:0;border-radius:50%;width:56px;height:56px;font-size:22px;cursor:pointer;z-index:99;box-shadow:0 5px 20px rgba(109,40,217,0.4)}
-#bookmark-modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);display:none;justify-content:center;align-items:center;z-index:100}
-.modal-box{background:#181828;border:1px solid rgba(109,40,217,0.3);padding:24px;border-radius:20px;text-align:center;max-width:340px;width:90%}
-.comment-box{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px;margin:8px 0;border:1px solid rgba(255,255,255,0.04)}
+body{background:#08080f;color:#fff;margin:0;padding:20px}
+.card{background:linear-gradient(145deg, rgba(24,24,40,0.9), rgba(15,15,25,0.9));border:1px solid rgba(109,40,217,0.25);border-radius:24px;padding:24px;max-width:800px;margin:15px auto}
+label{color:#94a3b8;font-size:13px;margin:14px 0 6px 0;display:block;font-weight:700}
+input, textarea, select{width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff;font-size:14px}
+input:focus, textarea:focus{outline:none;border-color:#6d28d9}
+.tabs{display:flex;gap:8px;margin:15px 0;background:rgba(0,0,0,0.3);padding:6px;border-radius:12px}
+.tab{flex:1;padding:12px;text-align:center;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;transition:0.2s;color:#64748b}
+.tab.active{background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;box-shadow:0 0 15px rgba(109,40,217,0.4)}
+.pdf-drop{border:2px dashed rgba(109,40,217,0.3);border-radius:16px;padding:25px;text-align:center;cursor:pointer;background:rgba(109,40,217,0.05)}
+.btn-main{width:100%;padding:16px;background:linear-gradient(90deg,#6d28d9,#38bdf8);border:0;border-radius:14px;color:#fff;font-weight:900;font-size:16px;margin-top:18px;cursor:pointer}
+.hidden{display:none}
 </style>
 </head>
 <body>
-<div id="progress-bar"></div>
-<div class="top-bar">
-<a href="index.html" style="background:rgba(255,255,255,0.06);padding:8px 14px;border-radius:20px;color:#fff;text-decoration:none;font-size:13px">← المكتبة</a>
-<button onclick="changeFont(2)" style="padding:8px 12px;border-radius:20px;border:1px solid #333;background:#000;color:#fff;cursor:pointer">A+</button>
-<button onclick="changeFont(-2)" style="padding:8px 12px;border-radius:20px;border:1px solid #333;background:#000;color:#fff;cursor:pointer">A-</button>
-<span id="progressText" style="color:#a78bfa;padding:8px 12px;background:rgba(109,40,217,0.1);border-radius:20px;font-size:12px">0%</span>
-<span id="readTime" style="color:#38bdf8;padding:8px 12px;background:rgba(56,189,248,0.1);border-radius:20px;font-size:12px"></span>
-<button onclick="likeNovel()" style="padding:8px 14px;border-radius:20px;border:0;background:rgba(255,255,255,0.06);color:#fff;cursor:pointer">❤️ <span id="likeCount">0</span></button>
+<div style="max-width:800px;margin:0 auto"><a href="index.html" style="color:#64748b;text-decoration:none;font-size:13px">← الرجوع للمكتبة</a></div>
+
+<div class="card">
+<h2 style="color:#a78bfa;margin:0">👑 انشر روايتك</h2>
+<p style="color:#64748b;font-size:13px;margin:5px 0 15px 0">اختار الطريقة اللي تريحك</p>
+
+<label>عنوان الرواية *</label>
+<input id="title" placeholder="اسم الرواية">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div><label>المؤلف *</label><input id="author"></div>
+<div><label>التصنيف</label><select id="genre"><option>فانتازيا</option><option>أكشن</option><option>مغامرة</option><option>نظام</option><option>رعب</option><option>رومانسي</option></select></div>
+</div>
+<label>رابط الغلاف *</label>
+<input id="cover" placeholder="https://...">
+<label>ملخص *</label>
+<textarea id="summary" rows="3" maxlength="150" placeholder="ملخص قصير يشد"></textarea>
+
+<div class="tabs">
+<div class="tab active" id="tab-write" onclick="switchMode('write')">✍️ كتابة يدوية</div>
+<div class="tab" id="tab-pdf" onclick="switchMode('pdf')">📄 رفع PDF</div>
 </div>
 
-<div style="max-width:800px;margin:20px auto;padding:20px">
-<h1 id="title" style="color:#fff;text-align:center;font-weight:900">بيحمل...</h1>
-<img id="cover" style="display:none" />
-<p id="meta" style="color:#64748b;text-align:center;font-size:13px;margin:10px 0"></p>
-<p id="summary" style="font-size:15px;color:#94a3b8;text-align:center;background:rgba(109,40,217,0.08);padding:14px;border-radius:12px;display:none;line-height:1.8"></p>
-<hr style="margin:20px 0;border:0;border-top:1px solid rgba(255,255,255,0.06)">
-<div id="story-text" style="background:rgba(24,24,40,0.5);padding:24px;border-radius:20px;border:1px solid rgba(255,255,255,0.04)"></div>
+<div id="writeMode">
+<label>محتوى الرواية - اكتب هنا *</label>
+<textarea id="content" rows="12" placeholder="اكتب روايتك هنا... كل فقرة دوس Enter مرتين
 
-<div style="margin-top:40px">
-<h3 style="color:#e2e8f0">💬 تعليقات <span id="cCount"></span></h3>
-<div style="display:flex;gap:8px;margin:12px 0">
-<input id="cName" placeholder="اسمك" style="width:25%;padding:12px;border-radius:12px;border:1px solid #333;background:#000;color:#fff">
-<input id="cText" placeholder="قول رأيك..." style="flex:1;padding:12px;border-radius:12px;border:1px solid #333;background:#000;color:#fff">
-<button onclick="addComment()" style="padding:12px 18px;border-radius:12px;border:0;background:#6d28d9;color:#fff;cursor:pointer">نشر</button>
-</div>
-<div id="commentsList"></div>
-</div>
+لو كتبت --- هتتعمل فاصل شيك"></textarea>
 </div>
 
-<button id="bookmark-fab" onclick="saveBookmarkManual()">🔖</button>
-<div id="bookmark-modal"><div class="modal-box">
-<p id="bm-text" style="color:#cbd5e1"></p>
-<div style="display:flex;gap:10px;margin-top:15px">
-<button onclick="resumeRead()" style="flex:1;padding:12px;background:#6d28d9;border:0;border-radius:12px;color:#fff;cursor:pointer">كمل قراءة</button>
-<button onclick="closeBm()" style="flex:1;padding:12px;background:rgba(255,255,255,0.06);border:0;border-radius:12px;color:#fff;cursor:pointer">ابدأ من الأول</button>
+<div id="pdfMode" class="hidden">
+<label>ارفع ملف PDF</label>
+<div class="pdf-drop" onclick="document.getElementById('pdfFile').click()">
+<div style="font-size:36px">📚</div>
+<p style="color:#a78bfa;font-weight:700;margin:8px 0">دوس لاختيار PDF</p>
+<p style="color:#475569;font-size:11px">او اسحبه هنا</p>
+<input type="file" id="pdfFile" accept=".pdf" hidden onchange="handlePDF(this.files[0])">
+<p id="pdfStatus" style="font-size:12px;margin-top:10px;color:#38bdf8"></p>
 </div>
-</div></div>
+<label style="margin-top:15px">المحتوى المستخرج من PDF (تقدر تعدل عليه)</label>
+<textarea id="contentPDF" rows="12" placeholder="النص من الـ PDF هيظهر هنا وتقدر تعدل عليه قبل النشر..."></textarea>
+</div>
+
+<button class="btn-main" onclick="publish()">نشر في الأرشيف 🚀</button>
+<p id="msg" style="text-align:center;margin-top:12px;font-size:13px"></p>
+</div>
 
 <script>
-let params = new URLSearchParams(window.location.search);
-let id = params.get('id');
-const DB = `https://novels-app-2f35b-default-rtdb.firebaseio.com/novels/${id}`;
-let currentNovel = null;
 let currentUser = JSON.parse(localStorage.getItem('monarch_user'));
+if(!currentUser){ location.href='login.html'; } else document.getElementById('author').value=currentUser.name;
+let mode='write';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-if(!currentUser){
-  alert('🔐 لازم تسجل دخول الأول عشان تقرا يا هانتر');
-  localStorage.setItem('monarch_next', 'read.html?id='+id);
-  location.href='login.html';
+function switchMode(m){
+  mode=m;
+  document.getElementById('tab-write').classList.toggle('active', m==='write');
+  document.getElementById('tab-pdf').classList.toggle('active', m==='pdf');
+  document.getElementById('writeMode').classList.toggle('hidden', m!=='write');
+  document.getElementById('pdfMode').classList.toggle('hidden', m!=='pdf');
 }
 
-function escapeHtml(text){ if(!text) return ''; let div=document.createElement('div'); div.textContent=text; return div.innerHTML; }
-
-function formatContent(text){
-  if(!text) return '';
-  return text.split(/\n\s*\n/).map(p=>{
-    p=p.trim(); if(!p) return '';
-    if(p==='---' || p==='***') return `<div style="text-align:center;color:#6d28d9;margin:30px 0;letter-spacing:8px;font-size:20px">• • •</div>`;
-    return `<p>${escapeHtml(p)}</p>`;
-  }).join('');
+async function handlePDF(file){
+  if(!file) return;
+  let status=document.getElementById('pdfStatus');
+  status.innerText='⏳ جاري قراءة PDF... '+file.name;
+  try{
+    let buf=await file.arrayBuffer();
+    let pdf=await pdfjsLib.getDocument(buf).promise;
+    let fullText='';
+    for(let i=1;i<=pdf.numPages;i++){
+      let page=await pdf.getPage(i);
+      let txt=await page.getTextContent();
+      fullText+=txt.items.map(s=>s.str).join(' ')+'\n\n';
+      status.innerText=`📖 بيقرا ${i}/${pdf.numPages}...`;
+      if(fullText.length>200000) break;
+    }
+    fullText=fullText.replace(/\s{3,}/g,'\n\n').trim();
+    document.getElementById('contentPDF').value=fullText;
+    status.innerText=`✅ تم استخراج ${pdf.numPages} صفحة - ${fullText.length} حرف`;
+    status.style.color='#22c55e';
+    if(!document.getElementById('title').value) document.getElementById('title').value=file.name.replace('.pdf','');
+  }catch(e){ status.innerText='❌ فشل قراءة الملف'; status.style.color='#ef4444'; }
 }
 
-function getBmKey(){ return `bookmark_${currentUser ? currentUser.id+'_' : ''}${id}` }
-function getProgressKey(){ return `progress_${currentUser ? currentUser.id+'_' : ''}${id}` }
+let drop=document.querySelector('.pdf-drop');
+drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.style.borderColor='#38bdf8'; });
+drop.addEventListener('drop', e=>{ e.preventDefault(); let f=e.dataTransfer.files[0]; if(f) handlePDF(f); });
 
-function saveProgress(){
-  let scroll = window.scrollY;
-  let total = document.body.scrollHeight - window.innerHeight;
-  let percent = total>0 ? Math.round((scroll/total)*100) : 0;
-  localStorage.setItem(getBmKey(), scroll);
-  localStorage.setItem(getProgressKey(), percent);
-  document.getElementById('progressText').innerText = percent+'%';
-  document.getElementById('progress-bar').style.width = percent+'%';
+async function publish(){
+  let title=document.getElementById('title').value.trim();
+  let author=document.getElementById('author').value.trim();
+  let cover=document.getElementById('cover').value.trim();
+  let summary=document.getElementById('summary').value.trim();
+  let content = mode==='write' ? document.getElementById('content').value.trim() : document.getElementById('contentPDF').value.trim();
+  let genre=document.getElementById('genre').value;
+  let msg=document.getElementById('msg');
+  if(!title||!author||!cover||!summary||!content) return msg.innerText='❌ كمل كل الخانات', msg.style.color='#ef4444';
+  msg.style.color='#a78bfa'; msg.innerText='🚀 جاري النشر...';
+  try{
+    let res=await fetch('https://novels-app-2f35b-default-rtdb.firebaseio.com/novels.json',{method:'POST',body:JSON.stringify({title,author,cover,summary,content,genre,likes:0,views:0,rank:'E',createdAt:Date.now(),date:new Date().toISOString(),publisherId:currentUser.id,publisherName:currentUser.name,source:mode})});
+    if(res.ok){ msg.style.color='#22c55e'; msg.innerText='✅ تم النشر!'; setTimeout(()=>location.href='index.html',1000); }
+  }catch(e){ msg.innerText='❌ خطأ'; }
 }
-function saveBookmarkManual(){
-  saveProgress();
-  let btn = document.getElementById('bookmark-fab');
-  btn.innerText = '✅'; setTimeout(()=>btn.innerText='🔖',1500);
-}
-function resumeRead(){
-  let pos = localStorage.getItem(getBmKey());
-  if(pos) window.scrollTo({top:parseInt(pos), behavior:'smooth'});
-  closeBm();
-}
-function closeBm(){ document.getElementById('bookmark-modal').style.display='none'; }
-function checkBookmark(){
-  let pos = localStorage.getItem(getBmKey());
-  let prog = localStorage.getItem(getProgressKey());
-  if(pos && parseInt(pos) > 300){
-    document.getElementById('bm-text').innerText = `انت وقفت عند ${prog||0}% من الرواية، تحب تكمل؟`;
-    document.getElementById('bookmark-modal').style.display='flex';
-  }
-}
-
-async function loadNovel(){
-  try {
-    let res = await fetch(`${DB}.json`);
-    let n = await res.json();
-    if(!n){ document.getElementById('title').innerText="🗑️ الرواية اتمسحت"; return; }
-    currentNovel=n;
-    document.title=n.title+" - Monarch";
-    document.getElementById('title').innerText=n.title;
-    let cover=document.getElementById('cover'); cover.src=n.cover; cover.style.display='block';
-    cover.onerror=()=>cover.src='https://via.placeholder.com/200x280?text=No+Image';
-    document.getElementById('summary').innerText=n.summary||'';
-    document.getElementById('summary').style.display=n.summary?'block':'none';
-    let rankHtml=n.rank?`<span class="rank-badge">${n.rank}</span>`:'';
-    document.getElementById('meta').innerHTML=`${rankHtml} ✍️ ${escapeHtml(n.author||'مجهول')} - 📅 ${n.date?new Date(n.date).toLocaleDateString('ar-EG'):''} - 👁️ ${n.views||0}`;
-    document.getElementById('story-text').innerHTML = formatContent(n.content);
-    document.getElementById('likeCount').innerText=n.likes||0;
-    let wc=n.content.split(/\s+/).length;
-    document.getElementById('readTime').innerText=`⏱️ ${Math.ceil(wc/200)} دقايق`;
-    fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({views:(n.views||0)+1})});
-    loadComments();
-    setTimeout(checkBookmark, 800);
-    window.addEventListener('scroll', saveProgress);
-    if(currentUser) document.getElementById('cName').value=currentUser.name;
-  } catch(e){ document.getElementById('title').innerText="خطأ في التحميل"; }
-}
-
-async function likeNovel(){ if(!currentNovel) return; if(localStorage.getItem('liked_'+id)) return alert('عامل لايك قبل كده 😅'); let newLikes=(currentNovel.likes||0)+1; await fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({likes:newLikes})}); document.getElementById('likeCount').innerText=newLikes; localStorage.setItem('liked_'+id,'1'); }
-async function addComment(){ let name=document.getElementById('cName').value.trim()||(currentUser?currentUser.name:'Hunter'); let text=document.getElementById('cText').value.trim(); if(!text) return; await fetch(`${DB}/comments.json`,{method:'POST',body:JSON.stringify({name,text,time:Date.now()})}); document.getElementById('cText').value=''; loadComments(); }
-async function loadComments(){ let res=await fetch(`${DB}/comments.json`); let data=await res.json(); let list=document.getElementById('commentsList'); let count=document.getElementById('cCount'); if(!data){list.innerHTML='<p style="color:#475569;text-align:center;padding:20px">كن أول هانتر يعلق 🔥</p>'; count.innerText=''; return;} let html=''; let c=0; for(let k in data){ c++; let x=data[k]; html=`<div class="comment-box"><b style="color:#a78bfa">${escapeHtml(x.name)}</b><span style="color:#475569;font-size:11px"> - ${new Date(x.time).toLocaleDateString('ar-EG')}</span><div style="margin-top:6px;color:#cbd5e1">${escapeHtml(x.text)}</div></div>`+html; } list.innerHTML=html; count.innerText=`(${c})`; }
-
-loadNovel();
-let fontSize=19;
-function changeFont(c){ fontSize+=c; if(fontSize<14) fontSize=14; if(fontSize>32) fontSize=32; document.querySelectorAll('#story-text p').forEach(p=>p.style.fontSize=fontSize+'px'); }
 </script>
 </body>
 </html>
