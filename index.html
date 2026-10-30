@@ -32,24 +32,38 @@ var portal = document.getElementById('portalScreen');
 var main = document.getElementById('mainSite');
 var container = document.getElementById('novelsContainer');
 
+function escapeHtml(text){
+    if(!text) return '';
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 async function loadNovels(){
-    var res = await fetch('https://novels-app-2f35b-default-rtdb.firebaseio.com/novels.json');
-    var data = await res.json();
-    if(!data){
-        container.innerHTML = '<p style="color:#cbd5e1;text-align:center">لسه مفيش روايات، كن اول من ينشر!</p>';
-        return;
+    try{
+        var res = await fetch('https://novels-app-2f35b-default-rtdb.firebaseio.com/novels.json');
+        var data = await res.json();
+        if(!data){
+            container.innerHTML = '<p style="color:#cbd5e1;text-align:center">لسه مفيش روايات، كن اول من ينشر!</p>';
+            return;
+        }
+        var html = '';
+        for(var id in data){
+            var novel = data[id];
+            var cover = novel.cover ? escapeHtml(novel.cover) : 'https://via.placeholder.com/300x180?text=No+Cover';
+            var title = escapeHtml(novel.title);
+            var summary = escapeHtml((novel.summary||'').substring(0,100));
+            html += '<div class="chapter-card">';
+            html += '<img src="'+cover+'" onerror="this.src=\'https://via.placeholder.com/300x180?text=No+Image\'" style="width:100%;height:180px;object-fit:cover;border-radius:8px;margin-bottom:10px" />';
+            html += '<h3>'+title+'</h3>';
+            html += '<p>'+summary+'...</p>';
+            html += '<a href="read.html?id='+encodeURIComponent(id)+'" class="read-btn">ابدأ القراءة ←</a>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
+    } catch(e){
+        container.innerHTML = '<p style="color:#ff6b6b;text-align:center">حصل خطأ في التحميل، جرب تاني</p>';
     }
-    var html = '';
-    for(var id in data){
-        var novel = data[id];
-        html += '<div class="chapter-card">';
-        html += '<img src="'+novel.cover+'" style="width:100%;height:180px;object-fit:cover;border-radius:8px;margin-bottom:10px" />';
-        html += '<h3>'+novel.title+'</h3>';
-        html += '<p>'+(novel.summary||'').substring(0,100)+'...</p>';
-        html += '<a href="read.html?id='+id+'" class="read-btn">ابدأ القراءة ←</a>';
-        html += '</div>';
-    }
-    container.innerHTML = html;
 }
 
 btn.onclick = function(){

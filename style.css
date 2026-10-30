@@ -1,4 +1,4 @@
- /* ========== الاعدادات الاساسية ========== */
+/* ========== الاساسيات ========== */
 * {
     margin: 0;
     padding: 0;
@@ -6,108 +6,121 @@
 }
 
 body {
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
-    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    font-family: 'Inter', 'Cairo', sans-serif;
     color: #ffffff;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
-/* ========== الهيدر بتاعك القديم ========== */
+/* ========== الهيدر ========== */
 .shadow {
-    background-color: #1e293b;
-    padding: 15px;
+    background: #1e293b;
+    padding: 15px 20px;
     display: flex;
     align-items: center;
     gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .hac {
-    width: 100px;
-    height: 100px;
+    width: 50px;
+    height: 50px;
     object-fit: cover;
+    border-radius: 10px;
 }
 
 .shadow a {
     color: #38bdf8;
     text-decoration: none;
     font-size: 18px;
+    font-weight: bold;
 }
+.shadow a:hover { color: #fff; }
 
-/* ========== المحتوى الرئيسي ========== */
+/* ========== المحتوى ========== */
 .container {
     max-width: 1200px;
-    margin: 0 auto; /* سنترة المحتوى في نص الشاشة */
+    margin: 0 auto;
     padding: 40px 20px;
 }
 
-/* تعديل لون العنوان ليصبح نيون متناسق مع الخلفية الغامقة */
 .title {
     color: #38bdf8; 
-    font-size: 42px !important; 
-    font-weight: 900 !important;
+    font-size: 38px;
+    font-weight: 900;
     margin: 0 auto 40px auto;  
     width: fit-content;        
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 2px;
     display: block;            
-    text-shadow: 0 0 15px rgba(56, 189, 248, 0.5); /* تأثير إضاءة للعنوان */
+    text-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+    animation: glow 2s ease-in-out infinite alternate;
 }
 
-/* ضبط المسافات بين كروت الفصول */
+/* ========== كروت الروايات ========== */
 .chapters {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px; /* مسافة بين الكروت عشان ما تلزقش */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
 }
 
 .chapter-card {
-    background-color: #1e293b;
+    background: #1e293b;
     padding: 25px;
     border-radius: 12px;
-    border: 2px solid #38bdf8;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: 0.3s ease;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
 }
 
-/* حركة خفيفة للكارت عند وقوف الماوس عليه */
 .chapter-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3);
 }
 
 .chapter-card h3 {
     margin: 0 0 12px 0;
     color: #38bdf8;
-    font-size: 26px !important; 
+    font-size: 22px;
 }
 
 .chapter-card p {
     color: #cbd5e1;
     margin: 0 0 20px 0;
-    font-size: 18px !important; 
-    line-height: 1.6; 
+    font-size: 16px;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-/* تعديل ألوان الزرار ليصبح مقروءاً وجذاباً */
 .read-btn {
-    background-color: #38bdf8;  /* خلفية نيون زرقاء */
-    color: #0f172a;              /* كتابة كحلي غامق واضحة جداً */
-    padding: 12px 24px;
+    background: #38bdf8;
+    color: #0f172a;
+    padding: 10px 20px;
     text-decoration: none;
     border-radius: 8px;
     display: inline-block;
     font-weight: bold;
-    font-size: 18px !important;
-    transition: 0.3s;
+    font-size: 16px;
+    border: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .read-btn:hover {
-    background-color: #ffffff; /* يقلب أبيض عند الهوفر */
-    color: #0f172a;
+    background: #fff;
     transform: scale(1.05);
+    box-shadow: 0 0 15px #38bdf8;
 }
 
+/* ========== الهيرو ========== */
 .hero {
     display: flex;
     align-items: center;
@@ -115,83 +128,67 @@ body {
     gap: 30px;
     margin-bottom: 50px;
     padding: 20px;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 15px;
 }
 
 .hero-text {
     color: #ffffff;  
-    font-size: 28px !important;
-    font-weight: 700 !important;
+    font-size: 24px;
+    font-weight: 700;
     flex: 1;
 }
 
 .hero-img {
-    width: 200px;
-    height: 200px;
+    width: 180px;
+    height: 180px;
     border-radius: 15px;
     object-fit: cover;
     border: 3px solid #38bdf8;
 }
 
-/* ========== شاشة بوابة الـ S-Rank ========== */
-/* ========== شاشة البوابة (تضمن السنترة الكاملة لكل العناصر) ========== */
+/* ========== شاشة البوابة ========== */
 .portal-screen {
     position: fixed;
-    top: 0; left: 0;
-    width: 100vw; 
-    height: 100vh;
-    background: #000000; /* خلفية سوداء كحل */
+    inset: 0;
+    background: #000;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* سنترة رأسية */
-    align-items: center;     /* سنترة أفقية */
+    justify-content: center;
+    align-items: center;
     z-index: 9999;
-    overflow: hidden;
 }
 
 .portal-screen h1 {
-    color: #ffffff;
+    color: #fff;
     margin-bottom: 20px;
-    font-size: 28px;
-    text-transform: uppercase;
+    font-size: 24px;
     letter-spacing: 3px;
     text-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
     text-align: center;
 }
 
-/* ========== البوابة باستعمال صورتك بالظبط ========== */
 .portal {
-    width: 350px;
-    height: 350px;
-    /* حطينا رابط الصورة بتاعتك مباشرة هنا */
+    width: 300px;
+    height: 300px;
     background-image: url('https://static0.cbrimages.com/wordpress/wp-content/uploads/2024/04/gate-solo-leveling-1.jpeg?q=70&fit=crop&w=825&dpr=1.png'); 
     background-size: cover;
     background-position: center;
-    border-radius: 50%; /* عشان نلغي الحواف المربعة وتبقى دائرية */
-
-    /* توهج أزرق نيون حول الصورة الحقيقية */
-    box-shadow: 0 0 50px rgba(56, 189, 248, 0.8),
-                0 0 100px rgba(29, 78, 216, 0.5);
- /* تشغيل أنيميشن الدوران السريع للداخل */
+    border-radius: 50%;
+    box-shadow: 0 0 50px rgba(56, 189, 248, 0.8), 0 0 100px rgba(29, 78, 216, 0.5);
     animation: vortexRotate 3s linear infinite;
 }
 
-/* أنيميشن يلف الصورة نفسها في مكانها بالظبط في السنتر */
 @keyframes vortexRotate {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(-360deg); /* عكس عقارب الساعة بيدي إيحاء بالشفط لجوه */
-    }
+    to { transform: rotate(-360deg); }
 }
 
-/* ========== زرار الـ OPEN ========== */
 .open-btn {
     margin-top: 40px;
     padding: 15px 50px;
     background: #38bdf8;
-    color: #000000;
-    font-size: 22px;
+    color: #000;
+    font-size: 20px;
     font-weight: 900;
     border: none;
     border-radius: 8px;
@@ -201,13 +198,14 @@ body {
 }
 
 .open-btn:hover {
-    background: #ffffff;
-    box-shadow: 0 0 30px #ffffff;
+    background: #fff;
+    box-shadow: 0 0 30px #fff;
     transform: scale(1.05);
 }
-/* 1. انيميشن ظهور النص بالراحة */
+
+/* ========== انيميشنز ========== */
 #story-text {
-    animation: fadeInUp 1s ease;
+    animation: fadeInUp 0.8s ease;
 }
 
 @keyframes fadeInUp {
@@ -215,21 +213,15 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* 2. انيميشن للزرار لما تقف عليه */
-button {
-    transition: all 0.3s ease; /* مهم عشان الحركة تبقى ناعمة */
-}
-button:hover {
-    transform: scale(1.1); /* يكبر شوية */
-    box-shadow: 0 0 15px #00bfff; /* يعمل توهج ازرق */
-}
-
-/* 3. انيميشن للعنوان */
-h1 {
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
 @keyframes glow {
-    from { text-shadow: 0 0 5px #00bfff; }
-    to { text-shadow: 0 0 20px #00bfff, 0 0 30px #00bfff; }
+    from { text-shadow: 0 0 5px #38bdf8; }
+    to { text-shadow: 0 0 20px #38bdf8, 0 0 30px #38bdf8; }
+}
+
+/* ========== موبايل ========== */
+@media (max-width: 768px) {
+    .title { font-size: 28px !important; }
+    .hero { flex-direction: column; text-align: center; }
+    .portal { width: 250px; height: 250px; }
+    .container { padding: 20px 15px; }
 }
