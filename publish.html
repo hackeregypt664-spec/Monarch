@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Monarch - نشر رواية</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 *{font-family:'Cairo', sans-serif}
@@ -56,7 +57,6 @@ textarea{resize:none}
 <label>اسم الكاتب</label>
 <input id="author" placeholder="مجهول" maxlength="50">
 
-<!-- رفع الغلاف من الجهاز -->
 <label>غلاف الرواية (من جهازك) *</label>
 <div class="upload-box" onclick="document.getElementById('coverFile').click()">
 <span>📸 اضغط لرفع صورة الغلاف</span>
@@ -75,13 +75,12 @@ textarea{resize:none}
 <label>ملخص الرواية</label>
 <textarea id="summary" placeholder="لمحة سريعة تشد القارئ..." rows="2" maxlength="300"></textarea>
 
-<!-- رفع ملف الرواية -->
 <label>ملف الرواية (بدل الكتابة) *</label>
 <div class="upload-box" onclick="document.getElementById('novelFile').click()">
 <span>📄 اضغط لرفع ملف الرواية</span>
 <p>.txt, .pdf - هيتملي تلقائيا تحت</p>
 </div>
-<input type="file" id="novelFile" accept=".txt,.pdf,.docx" hidden>
+<input type="file" id="novelFile" accept=".txt,.pdf" hidden>
 <p id="fileInfo" style="color:#22c55e;font-size:12px;display:none"></p>
 
 <label>نص الرواية *</label>
@@ -92,6 +91,8 @@ textarea{resize:none}
 </div>
 
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
 // --- 1 - تسجيل الدخول Check ---
 let currentUser = JSON.parse(localStorage.getItem('monarch_user'));
 let userBar = document.getElementById('userName');
@@ -100,6 +101,7 @@ if(currentUser){
   userBar.textContent = `Hunter: ${currentUser.name}`;
   loginLink.textContent = 'خروج';
   loginLink.onclick = (e)=>{e.preventDefault(); localStorage.removeItem('monarch_user'); location.reload();}
+  document.getElementById('author').value = currentUser.name;
 } else {
   userBar.textContent = 'انت زائر - سجل دخولك';
 }
@@ -110,30 +112,56 @@ document.getElementById('coverFile').addEventListener('change', function(e){
   if(!file) return;
   const reader = new FileReader();
   reader.onload = ()=>{
-    document.getElementById('cover').value = reader.result; // base64
+    document.getElementById('cover').value = reader.result;
     let img = document.getElementById('preview'); img.src = reader.result; img.style.display='block';
   }
   reader.readAsDataURL(file);
 });
 
-// --- 3 - رفع ملف الرواية ---
-document.getElementById('novelFile').addEventListener('change', function(e){
+// --- 3 - رفع ملف الرواية (النسخة المصححة للـ PDF) ---
+document.getElementById('novelFile').addEventListener('change', async function(e){
   const file = e.target.files[0];
   if(!file) return;
-  document.getElementById('fileInfo').style.display='block';
-  document.getElementById('fileInfo').textContent = `تم اختيار: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  let info = document.getElementById('fileInfo');
+  info.style.display='block';
+  info.style.color='#38bdf8';
+  info.textContent = `⏳ جاري قراءة: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
   
-  const reader = new FileReader();
-  if(file.name.endsWith('.txt')){
-    reader.onload = ()=>{ document.getElementById('content').value = reader.result; }
-    reader.readAsText(file, 'UTF-8');
-  } else {
-    // للـ PDF هنقراه كـ text بسيط (لو عايز قراءة احترافية هنضيف مكتبة)
-    reader.onload = ()=>{ 
-      alert('ملفات PDF هتترفع كنص - لو النص مظهرش انسخ المحتوى يدوياً');
-      document.getElementById('content').value = reader.result.slice(0,20000); 
+  try{
+    if(file.name.toLowerCase().endsWith('.txt')){
+      let text = await file.text();
+      document.getElementById('content').value = text;
+      info.style.color='#22c55e';
+      info.textContent = `✅ تم: ${file.name} - ${text.length} حرف`;
+    } 
+    else if(file.name.toLowerCase().endsWith('.pdf')){
+      let buffer = await file.arrayBuffer();
+      let pdf = await pdfjsLib.getDocument(buffer).promise;
+      let fullText = '';
+      info.textContent = `📖 PDF فيه ${pdf.numPages} صفحة - جاري الاستخراج...`;
+      
+      for(let i=1; i<=pdf.numPages; i++){
+        let page = await pdf.getPage(i);
+        let content = await page.getTextContent();
+        let pageText = content.items.map(item=>item.str).join(' ');
+        fullText += pageText + '\n\n';
+        info.textContent = `⏳ بيقرا صفحة ${i}/${pdf.numPages}... ${fullText.length} حرف`;
+        if(fullText.length > 180000) break;
+      }
+      
+      fullText = fullText.replace(/\s{3,}/g, '\n\n').trim();
+      document.getElementById('content').value = fullText;
+      info.style.color='#22c55e';
+      info.textContent = `✅ تم استخراج ${pdf.numPages} صفحة - ${fullText.length} حرف`;
+      
+      if(!document.getElementById('title').value){
+        document.getElementById('title').value = file.name.replace('.pdf','').replace(/_/g,' ');
+      }
     }
-    reader.readAsText(file);
+  }catch(err){
+    console.error(err);
+    info.style.color='#ef4444';
+    info.textContent = '❌ فشل قراءة الملف: ' + err.message;
   }
 });
 
