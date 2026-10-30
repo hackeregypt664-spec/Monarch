@@ -6,29 +6,59 @@
 <link rel="stylesheet" href="style.css">
 <title>قراءة</title>
 <style>
-#cover{width:200px;height:280px;object-fit:cover;border-radius:15px;border:3px solid #38bfff;margin:20px auto;display:block}
-#story-text{font-size:18px;line-height:1.9;white-space:pre-wrap;background:#1a1a1a;padding:20px;border-radius:12px;word-break:break-word}
-.controls{text-align:center;margin:15px 0;display:flex;gap:10px;justify-content:center}
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+*{font-family:'Cairo', sans-serif}
+body{background:#08080f !important}
+.top-bar{position:sticky;top:0;z-index:10;background:rgba(8,8,15,0.8);backdrop-filter:blur(20px);padding:12px 0;border-bottom:1px solid rgba(109,40,217,0.15);display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+#cover{width:220px;height:320px;object-fit:cover;border-radius:20px;border:1px solid rgba(109,40,217,0.3);margin:20px auto;display:block;box-shadow:0 20px 40px rgba(0,0,0,0.5)}
+#story-text{
+ font-size:18px;line-height:2.2;white-space:pre-wrap;
+ background: linear-gradient(145deg, rgba(24,24,40,0.6), rgba(15,15,25,0.6));
+ padding:28px;border-radius:20px;word-break:break-word;
+ border:1px solid rgba(255,255,255,0.05);
+ animation:fadeInUp 0.8s ease;
+ box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.rank-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(109,40,217,0.15);border:1px solid rgba(109,40,217,0.3);color:#a78bfa;margin:0 5px}
+.comment-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:12px;border-radius:12px;margin:8px 0}
+.like-active{background:linear-gradient(90deg,#ef4444,#f59e0b) !important}
 </style>
 </head>
 <body>
-<div class="container" style="max-width:800px;margin:20px auto;padding:20px">
-<a href="index.html" class="read-btn" style="margin:20px 0;display:inline-block">← رجوع للمكتبة</a>
-<h1 id="title" class="title">بيحمل...</h1>
-<img id="cover" style="display:none" />
-<p id="meta" style="color:#888;text-align:center;font-size:14px"></p>
-<p id="summary" class="hero-text" style="font-size:18px!important;color:#cbd5e1"></p>
-<hr style="margin:20px 0;border-color:#333">
-<div class="controls">
-<button onclick="changeFont(2)" class="read-btn">A+ تكبير</button>
-<button onclick="changeFont(-2)" class="read-btn">A- تصغير</button>
+<div class="top-bar">
+<a href="index.html" class="read-btn" style="background:rgba(255,255,255,0.06)">← المكتبة</a>
+<button onclick="changeFont(2)" class="read-btn">A+</button>
+<button onclick="changeFont(-2)" class="read-btn">A-</button>
+<span id="readTime" style="color:#38bdf8;padding:10px 14px;background:rgba(56,189,248,0.1);border-radius:20px;font-size:13px"></span>
+<button id="likeBtn" onclick="likeNovel()" class="read-btn">❤️ <span id="likeCount">0</span></button>
 </div>
+
+<div class="container" style="max-width:800px;margin:20px auto;padding:20px">
+<h1 id="title" class="title" style="color:#a78bfa;text-shadow:0 0 20px rgba(167,139,250,0.3)">بيحمل...</h1>
+<img id="cover" style="display:none" />
+<p id="meta" style="color:#64748b;text-align:center;font-size:13px;margin:10px 0"></p>
+<p id="summary" style="font-size:16px;color:#94a3b8;text-align:center;background:rgba(109,40,217,0.08);padding:14px;border-radius:12px;border:1px solid rgba(109,40,217,0.15)"></p>
+<hr style="margin:20px 0;border:0;border-top:1px solid rgba(255,255,255,0.06)">
+
 <div id="story-text">بيحمل القصة...</div>
+
+<div style="margin-top:40px">
+<h3 style="color:#e2e8f0">💬 تعليقات الهانترز <span id="cCount" style="color:#6d28d9"></span></h3>
+<div style="display:flex;gap:8px;margin:12px 0">
+<input id="cName" placeholder="اسمك" style="width:25%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff">
+<input id="cText" placeholder="قول رأيك في الرواية..." style="flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff">
+<button onclick="addComment()" class="read-btn" style="padding:12px 18px">نشر</button>
+</div>
+<div id="commentsList" style="margin-top:10px"></div>
+</div>
 </div>
 
 <script>
 let params = new URLSearchParams(window.location.search);
 let id = params.get('id');
+const DB = `https://novels-app-2f35b-default-rtdb.firebaseio.com/novels/${id}`;
+let currentNovel = null;
 
 if(!id){
   document.getElementById('title').innerText = "رابط غلط";
@@ -44,9 +74,8 @@ function escapeHtml(text){
 
 async function loadNovel(){
   try {
-    let res = await fetch(`https://novels-app-2f35b-default-rtdb.firebaseio.com/novels/${id}.json`);
+    let res = await fetch(`${DB}.json`);
     let n = await res.json();
-
     if(!n){
       document.getElementById('title').innerText = "🗑️ الرواية دي اتمسحت";
       document.getElementById('story-text').innerText = "الادمن مسح الرواية دي، مش هتظهر عند حد تاني 🙂";
@@ -54,34 +83,63 @@ async function loadNovel(){
       document.getElementById('summary').style.display='none';
       return;
     }
-
-    document.title = n.title + " - عالم الروايات";
+    currentNovel = n;
+    document.title = n.title + " - Monarch";
     document.getElementById('title').innerText = n.title;
-    
     let cover = document.getElementById('cover');
     cover.src = n.cover || 'https://via.placeholder.com/200x280?text=No+Cover';
     cover.style.display = 'block';
     cover.onerror = function(){ this.src='https://via.placeholder.com/200x280?text=No+Image'; };
-    
     document.getElementById('summary').innerText = n.summary || '';
-    document.getElementById('meta').innerText = `✍️ ${n.author || 'مجهول'} - 📅 ${n.date ? new Date(n.date).toLocaleDateString('ar-EG') : ''}`;
-    
-    // مهم: innerText مش innerHTML عشان الحماية
+    document.getElementById('summary').style.display = n.summary ? 'block' : 'none';
+    let rankHtml = n.rank ? `<span class="rank-badge">${n.rank}</span>` : '';
+    document.getElementById('meta').innerHTML = `${rankHtml} ✍️ ${escapeHtml(n.author||'مجهول')} - 📅 ${n.date ? new Date(n.date).toLocaleDateString('ar-EG') : ''} - 👁️ ${n.views||0}`;
     document.getElementById('story-text').innerText = n.content;
-
+    document.getElementById('likeCount').innerText = n.likes||0;
+    let wc = n.content.split(/\s+/).length;
+    document.getElementById('readTime').innerText = `⏱️ ${Math.ceil(wc/200)} دقايق قراءة`;
+    // زود مشاهدة
+    fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({views:(n.views||0)+1})});
+    loadComments();
   } catch(e){
     document.getElementById('title').innerText = "خطأ في التحميل";
     document.getElementById('story-text').innerText = "اتأكد من النت وحاول تاني";
   }
 }
 
-loadNovel();
+async function likeNovel(){
+ if(!currentNovel) return;
+ let btn = document.getElementById('likeBtn');
+ if(localStorage.getItem('liked_'+id)) return alert('انت عامل لايك قبل كده يا هانتر 😅');
+ let newLikes = (currentNovel.likes||0)+1;
+ await fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({likes:newLikes})});
+ document.getElementById('likeCount').innerText=newLikes;
+ btn.classList.add('like-active');
+ localStorage.setItem('liked_'+id,'1');
+ currentNovel.likes=newLikes;
+}
 
+async function addComment(){
+ let name=document.getElementById('cName').value.trim()||'Hunter';
+ let text=document.getElementById('cText').value.trim();
+ if(!text) return;
+ await fetch(`${DB}/comments.json`,{method:'POST',body:JSON.stringify({name,text,time:Date.now()})});
+ document.getElementById('cText').value=''; loadComments();
+}
+
+async function loadComments(){
+ let res=await fetch(`${DB}/comments.json`); let data=await res.json();
+ let list=document.getElementById('commentsList'); let count=document.getElementById('cCount');
+ if(!data){list.innerHTML='<p style="color:#475569;text-align:center;padding:20px">كن أول هانتر يعلق 🔥</p>'; count.innerText=''; return;}
+ let html=''; let c=0;
+ for(let k in data){ c++; let x=data[k]; html=`<div class="comment-box"><b style="color:#a78bfa">${escapeHtml(x.name)}</b><span style="color:#475569;font-size:11px"> - ${new Date(x.time).toLocaleDateString('ar-EG')}</span><div style="margin-top:6px;color:#cbd5e1">${escapeHtml(x.text)}</div></div>`+html; }
+ list.innerHTML=html; count.innerText=`(${c})`;
+}
+
+loadNovel();
 let fontSize=18;
 function changeFont(c){ 
-  fontSize+=c;
-  if(fontSize < 12) fontSize = 12;
-  if(fontSize > 40) fontSize = 40;
+  fontSize+=c; if(fontSize<12) fontSize=12; if(fontSize>40) fontSize=40;
   document.getElementById('story-text').style.fontSize=fontSize+'px'; 
 }
 </script>

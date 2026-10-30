@@ -3,25 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>عالم الروايات</title>
+<title>MONARCH - عالم الروايات</title>
 <link rel="stylesheet" href="style.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+*{font-family:'Cairo', sans-serif}
+body{background:#08080f !important}
+.portal-screen{
+ position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999
+}
+.portal{
+ width:320px;height:320px;
+ background-image:url('https://static0.cbrimages.com/wordpress/wp-content/uploads/2024/04/gate-solo-leveling-1.jpeg?q=70&fit=crop&w=825&dpr=1.png');
+ background-size:cover;background-position:center;border-radius:50%;
+ box-shadow:0 0 60px rgba(109,40,217,0.8),0 0 100px rgba(56,189,248,0.4);
+ animation:vortex 4s linear infinite
+}
+@keyframes vortex{0%{transform:rotate(0deg)}100%{transform:rotate(-360deg)}}
+.open-btn{margin-top:30px;padding:14px 48px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;font-weight:900;border:0;border-radius:12px;cursor:pointer;box-shadow:0 0 20px rgba(109,40,217,0.5)}
+.title{text-align:center;color:#a78bfa;font-size:38px;font-weight:900;text-shadow:0 0 20px rgba(167,139,250,0.3);margin:20px 0 10px 0}
+.filters{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:15px 0}
+.f-btn{padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#94a3b8;cursor:pointer;font-size:13px;transition:0.2s}
+.f-btn.active,.f-btn:hover{background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border-color:transparent;box-shadow:0 0 15px rgba(109,40,217,0.4)}
+.chapters{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:10px}
+.chapter-card{
+ background:linear-gradient(145deg, rgba(24,24,40,0.8), rgba(15,15,25,0.8));
+ border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:14px;
+ transition:0.3s;position:relative;overflow:hidden
+}
+.chapter-card:hover{transform:translateY(-4px);border-color:rgba(109,40,217,0.4);box-shadow:0 10px 30px rgba(109,40,217,0.2)}
+.rank-badge{position:absolute;top:12px;left:12px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;z-index:2}
+.rank-S{background:#facc15;color:#000}.rank-Monarch{background:linear-gradient(90deg,#a78bfa,#38bdf8);color:#fff}.rank-A{background:#ef4444;color:#fff}.rank-E{background:rgba(255,255,255,0.15);color:#cbd5e1}
+.meta-row{display:flex;justify-content:space-between;color:#64748b;font-size:12px;margin:8px 0}
+</style>
 </head>
 <body>
 
 <div id="portalScreen" class="portal-screen">
-    <h1>Enter the world of novels</h1>
+    <h1 style="color:#fff;letter-spacing:3px;margin-bottom:20px">ENTER THE WORLD OF NOVELS</h1>
     <div class="portal"></div>
-    <button id="openBtn" class="open-btn">OPEN</button>
+    <button id="openBtn" class="open-btn">OPEN GATE</button>
 </div>
 
 <div id="mainSite" class="main-site" style="display:none">
-    <div class="container">
-        <h1 class="title">مكتبة الروايات</h1>
-        <div style="text-align:center; margin-bottom:20px;">
-            <a href="publish.html" class="read-btn">+ انشر روايتك</a>
+    <div class="container" style="max-width:1200px;margin:0 auto;padding:20px">
+        <h1 class="title">MONARCH ARCHIVE</h1>
+        <p style="text-align:center;color:#475569;font-size:13px;margin-bottom:15px">أرشيف الهانترز - حيث تولد الأساطير</p>
+        
+        <div style="text-align:center; margin-bottom:15px;">
+            <a href="publish.html" class="open-btn" style="text-decoration:none;display:inline-block">+ انشر روايتك</a>
+            <a href="admin.html" style="color:#475569;font-size:12px;margin-right:15px;text-decoration:none">ادمن</a>
         </div>
+
+        <div class="filters">
+            <button onclick="filterRank('all')" id="f-all" class="f-btn active">الكل</button>
+            <button onclick="filterRank('S')" id="f-S" class="f-btn">S-Rank 🔥</button>
+            <button onclick="filterRank('Monarch')" id="f-Monarch" class="f-btn">Monarch 👑</button>
+            <button onclick="sortBy('likes')" id="f-likes" class="f-btn">الأكثر حبا ❤️</button>
+            <button onclick="sortBy('new')" id="f-new" class="f-btn">الأحدث ✨</button>
+        </div>
+
         <div class="chapters" id="novelsContainer">
-            <p style="color:#cbd5e1;text-align:center">بيحمل الروايات...</p>
+            <p style="color:#475569;text-align:center;grid-column:1/-1">تفتح البوابة... بيحمل الروايات</p>
         </div>
     </div>
 </div>
@@ -31,6 +75,8 @@ var btn = document.getElementById('openBtn');
 var portal = document.getElementById('portalScreen');
 var main = document.getElementById('mainSite');
 var container = document.getElementById('novelsContainer');
+var allNovels = [];
+var currentFilter = 'all';
 
 function escapeHtml(text){
     if(!text) return '';
@@ -44,38 +90,63 @@ async function loadNovels(){
         var res = await fetch('https://novels-app-2f35b-default-rtdb.firebaseio.com/novels.json');
         var data = await res.json();
         if(!data){
-            container.innerHTML = '<p style="color:#cbd5e1;text-align:center">لسه مفيش روايات، كن اول من ينشر!</p>';
+            container.innerHTML = '<p style="color:#475569;text-align:center;grid-column:1/-1">لسه مفيش روايات، كن اول Monarch ينشر!</p>';
             return;
         }
-        var html = '';
-        for(var id in data){
-            var novel = data[id];
-            var cover = novel.cover ? escapeHtml(novel.cover) : 'https://via.placeholder.com/300x180?text=No+Cover';
-            var title = escapeHtml(novel.title);
-            var summary = escapeHtml((novel.summary||'').substring(0,100));
-            html += '<div class="chapter-card">';
-            html += '<img src="'+cover+'" onerror="this.src=\'https://via.placeholder.com/300x180?text=No+Image\'" style="width:100%;height:180px;object-fit:cover;border-radius:8px;margin-bottom:10px" />';
-            html += '<h3>'+title+'</h3>';
-            html += '<p>'+summary+'...</p>';
-            html += '<a href="read.html?id='+encodeURIComponent(id)+'" class="read-btn">ابدأ القراءة ←</a>';
-            html += '</div>';
-        }
-        container.innerHTML = html;
+        allNovels = [];
+        for(var id in data){ data[id]._id=id; allNovels.push(data[id]); }
+        render(allNovels);
     } catch(e){
-        container.innerHTML = '<p style="color:#ff6b6b;text-align:center">حصل خطأ في التحميل، جرب تاني</p>';
+        container.innerHTML = '<p style="color:#ef4444;text-align:center;grid-column:1/-1">حصل خطأ في فتح البوابة، جرب تاني</p>';
     }
 }
 
-btn.onclick = function(){
-    portal.style.transition = '0.8s';
-    portal.style.opacity = '0';
-    setTimeout(function(){
-        portal.style.display = 'none';
-        main.style.display = 'block';
-        loadNovels();
-    }, 800);
+function render(list){
+    if(list.length==0){ container.innerHTML='<p style="color:#475569;text-align:center;grid-column:1/-1">مفيش روايات في التصنيف ده</p>'; return; }
+    var html='';
+    for(var i=0;i<list.length;i++){
+        var novel=list[i];
+        var cover=novel.cover?escapeHtml(novel.cover):'https://via.placeholder.com/300x180/1a1a2e/6d28d9?text=MONARCH';
+        var title=escapeHtml(novel.title);
+        var summary=escapeHtml((novel.summary||'بدون ملخص').substring(0,90));
+        var author=escapeHtml(novel.author||'مجهول');
+        var rank=novel.rank||'E';
+        var likes=novel.likes||0;
+        var views=novel.views||0;
+        html+='<div class="chapter-card">';
+        html+='<span class="rank-badge rank-'+rank+'">'+rank+'</span>';
+        html+='<img src="'+cover+'" onerror="this.src=\'https://via.placeholder.com/300x180/1a1a2e/6d28d9?text=MONARCH\'" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:10px" />';
+        html+='<h3 style="color:#e2e8f0;font-size:16px;margin:5px 0">'+title+'</h3>';
+        html+='<p style="color:#64748b;font-size:13px;height:36px;overflow:hidden">'+summary+'...</p>';
+        html+='<div class="meta-row"><span>✍️ '+author+'</span><span>❤️ '+likes+' | 👁️ '+views+'</span></div>';
+        html+='<a href="read.html?id='+encodeURIComponent(novel._id)+'" class="open-btn" style="display:block;text-align:center;text-decoration:none;padding:10px;margin-top:10px;font-size:13px">ابدأ القراءة ←</a>';
+        html+='</div>';
+    }
+    container.innerHTML=html;
+}
+
+function filterRank(r){
+    currentFilter=r;
+    document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('f-'+r).classList.add('active');
+    if(r=='all') render(allNovels);
+    else render(allNovels.filter(n=>n.rank==r));
+}
+
+function sortBy(type){
+    document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('f-'+type).classList.add('active');
+    var sorted=[...allNovels];
+    if(type=='likes') sorted.sort((a,b)=>(b.likes||0)-(a.likes||0));
+    if(type=='new') sorted.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    render(sorted);
+}
+
+btn.onclick=function(){
+    portal.style.transition='0.8s';
+    portal.style.opacity='0';
+    setTimeout(function(){ portal.style.display='none'; main.style.display='block'; loadNovels(); },800);
 };
 </script>
-
 </body>
 </html>
