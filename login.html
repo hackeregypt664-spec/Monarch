@@ -6,60 +6,56 @@
 <title>دخول الهانترز - Monarch</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-*{font-family:'Cairo';box-sizing:border-box}
-body{background:#08080f;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
-.card{background:linear-gradient(145deg, rgba(24,24,40,0.9), rgba(15,15,25,0.9));padding:28px;border-radius:22px;width:95%;max-width:380px;border:1px solid rgba(109,40,217,0.3);text-align:center}
-h2{color:#a78bfa;margin-bottom:15px}
-input{width:100%;padding:13px;margin:7px 0;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.4);color:#fff}
-button{width:100%;padding:13px;background:linear-gradient(90deg,#6d28d9,#38bdf8);border:0;border-radius:12px;color:#fff;font-weight:900;margin-top:10px;cursor:pointer}
-.tabs{display:flex;gap:8px;margin-bottom:15px}
-.tab{flex:1;padding:8px;border-radius:10px;background:rgba(255,255,255,0.05);color:#94a3b8;cursor:pointer;border:1px solid rgba(255,255,255,0.06)}
-.tab.active{background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff}
-a{color:#64748b;text-decoration:none;font-size:12px;display:block;margin-top:12px}
+*{font-family:'Cairo', sans-serif;box-sizing:border-box}
+body{background:#08080f;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px}
+.card{background:linear-gradient(145deg, rgba(24,24,40,0.9), rgba(15,15,25,0.9));padding:30px;border-radius:24px;width:100%;max-width:400px;border:1px solid rgba(109,40,217,0.3);box-shadow:0 0 60px rgba(109,40,217,0.15);text-align:center}
+h2{color:#a78bfa;margin:0 0 10px 0}
+p{color:#64748b;font-size:13px;margin-bottom:15px}
+input{width:100%;padding:14px;margin:8px 0;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:#fff}
+input:focus{outline:none;border-color:#6d28d9}
+button{width:100%;padding:14px;background:linear-gradient(90deg,#6d28d9,#38bdf8);border:0;border-radius:12px;color:#fff;font-weight:900;font-size:16px;margin-top:12px;cursor:pointer;box-shadow:0 0 20px rgba(109,40,217,0.4)}
+a{color:#475569;text-decoration:none;font-size:12px;display:block;margin-top:15px}
 </style>
 </head>
 <body>
 <div class="card">
-<h2>🔐 بوابة الهانترز</h2>
-<div class="tabs">
-<div id="t-login" class="tab active" onclick="switchTab('login')">دخول</div>
-<div id="t-reg" class="tab" onclick="switchTab('reg')">حساب جديد</div>
-</div>
-<input id="name" placeholder="اسمك" style="display:none"/>
-<input id="email" type="email" placeholder="الايميل"/>
-<input id="pass" type="password" placeholder="كلمة السر *"/>
-<button id="mainBtn" onclick="handleAuth()">دخول 👑</button>
+<h2>🔐 دخول الـ Hunters</h2>
+<p>سجل عشان تحفظ رواياتك وعلامات القراءة</p>
+<input id="name" placeholder="اسمك كـ Hunter *" />
+<input id="email" type="email" placeholder="الايميل *" />
+<input id="pass" type="password" placeholder="كلمة السر *" />
+<input id="pass2" type="password" placeholder="تأكيد كلمة السر *" />
+<button onclick="login()">دخول الأرشيف 👑</button>
 <a href="index.html">← رجوع للمكتبة</a>
 <p id="msg" style="color:#ef4444;font-size:12px;margin-top:10px"></p>
 </div>
 <script>
-let mode='login';
-function switchTab(m){
- mode=m;
- document.getElementById('t-login').classList.toggle('active',m=='login');
- document.getElementById('t-reg').classList.toggle('active',m=='reg');
- document.getElementById('name').style.display=m=='reg'?'block':'none';
- document.getElementById('mainBtn').innerText=m=='reg'?'انشاء حساب 👑':'دخول 👑';
-}
-function handleAuth(){
+function login(){
  let n=document.getElementById('name').value.trim();
  let e=document.getElementById('email').value.trim();
  let p=document.getElementById('pass').value.trim();
+ let p2=document.getElementById('pass2').value.trim();
  let msg=document.getElementById('msg');
- if(!e||!p) return msg.innerText='اكتب الايميل والباسورد';
+ if(!n||!e||!p||!p2) return msg.innerText='املا كل البيانات يا هانتر';
+ if(p!==p2) return msg.innerText='كلمتين السر مش زي بعض';
+ if(p.length<4) return msg.innerText='كلمة السر قصيرة - 4 حروف على الاقل';
+ 
  let users=JSON.parse(localStorage.getItem('monarch_users')||'{}');
- if(mode=='reg'){
-   if(!n) return msg.innerText='اكتب اسمك';
-   if(users[e]) return msg.innerText='الايميل ده موجود قبل كده';
-   users[e]={name:n,email:e,pass:p,id:Date.now()};
-   localStorage.setItem('monarch_users',JSON.stringify(users));
-   localStorage.setItem('monarch_user',JSON.stringify(users[e]));
+ // لو مسجل قبل كده - يخش
+ if(users[e]){
+   if(users[e].pass!==p) return msg.innerText='كلمة السر غلط';
+   localStorage.setItem('monarch_user', JSON.stringify(users[e]));
+   alert('اهلا بعودتك '+users[e].name+' 👑');
    location.href='index.html';
- } else {
-   if(!users[e] || users[e].pass!==p) return msg.innerText='الايميل او الباسورد غلط';
-   localStorage.setItem('monarch_user',JSON.stringify(users[e]));
-   location.href='index.html';
+   return;
  }
+ // جديد - يسجل
+ let user={id:Date.now(), name:n, email:e, pass:p, time: Date.now()};
+ users[e]=user;
+ localStorage.setItem('monarch_users', JSON.stringify(users));
+ localStorage.setItem('monarch_user', JSON.stringify(user));
+ alert('اهلا '+n+' 👑 تم انشاء حسابك');
+ location.href='index.html';
 }
 </script>
 </body>
