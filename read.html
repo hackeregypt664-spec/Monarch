@@ -12,19 +12,17 @@ body{background:#08080f;color:#fff;margin:0}
 .top-bar{position:sticky;top:4px;z-index:10;background:rgba(8,8,15,0.9);backdrop-filter:blur(20px);padding:12px;border-bottom:1px solid rgba(109,40,217,0.15);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
 #cover{width:230px;height:330px;object-fit:cover;border-radius:20px;border:1px solid rgba(109,40,217,0.3);margin:20px auto;display:block}
 .rank-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(109,40,217,0.15);border:1px solid rgba(109,40,217,0.3);color:#a78bfa}
-#bookmark-fab{position:fixed;bottom:25px;left:25px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border:0;border-radius:50%;width:56px;height:56px;font-size:22px;cursor:pointer;z-index:99;box-shadow:0 5px 20px rgba(109,40,217,0.4)}
+#bookmark-fab{position:fixed;bottom:25px;left:25px;background:linear-gradient(90deg,#6d28d9,#38bdf8);color:#fff;border:0;border-radius:50%;width:56px;height:56px;font-size:22px;cursor:pointer;z-index:99}
 #bookmark-modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);display:none;justify-content:center;align-items:center;z-index:100}
 .modal-box{background:#181828;border:1px solid rgba(109,40,217,0.3);padding:24px;border-radius:20px;text-align:center;max-width:340px;width:90%}
 .comment-box{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px;margin:8px 0;border:1px solid rgba(255,255,255,0.04)}
 
-/* === ميزة العلامة على السطر === */
-#story-text p{position:relative;cursor:pointer;transition:0.2s;padding:10px 14px;border-radius:10px;border-right:3px solid transparent}
-#story-text p:hover{background:rgba(109,40,217,0.08);border-right-color:rgba(109,40,217,0.3)}
-#story-text p.marked{background:rgba(250,204,21,0.12) !important;border-right:3px solid #facc15 !important;box-shadow:0 0 15px rgba(250,204,21,0.15)}
-#story-text p.marked::after{content:'📌';position:absolute;left:10px;top:8px;font-size:14px}
-.marks-panel{position:fixed;bottom:90px;left:25px;background:#181828;border:1px solid rgba(250,204,21,0.3);border-radius:14px;padding:12px;width:200px;z-index:98;display:none;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
-.mark-item{color:#cbd5e1;font-size:11px;padding:6px 8px;background:rgba(255,255,255,0.05);border-radius:6px;margin:4px 0;cursor:pointer;transition:0.2s}
-.mark-item:hover{background:rgba(250,204,21,0.15);color:#facc15}
+/* === تعليم الكلمة === */
+#story-text p{font-size:19px;line-height:2.3;color:#d1d5db;margin:18px 0;text-align:justify;word-spacing:3px}
+.word{cursor:pointer;padding:2px 3px;border-radius:6px;transition:0.15s}
+.word:hover{background:rgba(109,40,217,0.2)}
+.word.marked{background:#facc15 !important;color:#000 !important;font-weight:700;box-shadow:0 0 10px rgba(250,204,21,0.5);border-radius:4px}
+.marks-panel{position:fixed;bottom:90px;left:25px;background:#181828;border:1px solid rgba(250,204,21,0.3);border-radius:14px;padding:12px;width:220px;z-index:98;display:none;max-height:300px;overflow-y:auto}
 </style>
 </head>
 <body>
@@ -34,7 +32,6 @@ body{background:#08080f;color:#fff;margin:0}
 <button onclick="changeFont(2)" style="padding:8px 12px;border-radius:20px;border:1px solid #333;background:#000;color:#fff;cursor:pointer">A+</button>
 <button onclick="changeFont(-2)" style="padding:8px 12px;border-radius:20px;border:1px solid #333;background:#000;color:#fff;cursor:pointer">A-</button>
 <span id="progressText" style="color:#a78bfa;padding:8px 12px;background:rgba(109,40,217,0.1);border-radius:20px;font-size:12px">0%</span>
-<span id="readTime" style="color:#38bdf8;padding:8px 12px;background:rgba(56,189,248,0.1);border-radius:20px;font-size:12px"></span>
 <button onclick="likeNovel()" style="padding:8px 14px;border-radius:20px;border:0;background:rgba(255,255,255,0.06);color:#fff;cursor:pointer">❤️ <span id="likeCount">0</span></button>
 </div>
 
@@ -42,11 +39,8 @@ body{background:#08080f;color:#fff;margin:0}
 <h1 id="title" style="color:#fff;text-align:center;font-weight:900">بيحمل...</h1>
 <img id="cover" style="display:none" />
 <p id="meta" style="color:#64748b;text-align:center;font-size:13px;margin:10px 0"></p>
-<p id="summary" style="font-size:15px;color:#94a3b8;text-align:center;background:rgba(109,40,217,0.08);padding:14px;border-radius:12px;display:none;line-height:1.8"></p>
-<div style="background:rgba(250,204,21,0.08);border:1px solid rgba(250,204,21,0.2);border-radius:10px;padding:10px;text-align:center;color:#facc15;font-size:12px;margin:10px 0">💡 دوس على أي فقرة علشان تعلمها 📌 لو هتقوم وترجع</div>
-<hr style="margin:20px 0;border:0;border-top:1px solid rgba(255,255,255,0.06)">
+<div style="background:rgba(250,204,21,0.08);border:1px solid rgba(250,204,21,0.2);border-radius:10px;padding:10px;text-align:center;color:#facc15;font-size:12px;margin:10px 0">💡 دوس على أي <b>كلمة</b> علشان تعلمها 🖍️</div>
 <div id="story-text" style="background:rgba(24,24,40,0.5);padding:24px;border-radius:20px;border:1px solid rgba(255,255,255,0.04)"></div>
-<div style="margin-top:40px"><h3>💬 تعليقات <span id="cCount"></span></h3><div style="display:flex;gap:8px;margin:12px 0"><input id="cName" placeholder="اسمك" style="width:25%;padding:12px;border-radius:12px;border:1px solid #333;background:#000;color:#fff"><input id="cText" placeholder="قول رأيك..." style="flex:1;padding:12px;border-radius:12px;border:1px solid #333;background:#000;color:#fff"><button onclick="addComment()" style="padding:12px 18px;border-radius:12px;border:0;background:#6d28d9;color:#fff;cursor:pointer">نشر</button></div><div id="commentsList"></div></div>
 </div>
 
 <button id="bookmark-fab" onclick="saveBookmarkManual()">🔖</button>
@@ -57,65 +51,73 @@ body{background:#08080f;color:#fff;margin:0}
 let params = new URLSearchParams(window.location.search);
 let id = params.get('id');
 const DB = `https://novels-app-2f35b-default-rtdb.firebaseio.com/novels/${id}`;
-let currentNovel = null;
 let currentUser = JSON.parse(localStorage.getItem('monarch_user'));
 if(!currentUser){ localStorage.setItem('monarch_next','read.html?id='+id); location.href='login.html'; }
-function escapeHtml(text){ if(!text) return ''; let div=document.createElement('div'); div.textContent=text; return div.innerHTML; }
 
+function escapeHtml(text){ if(!text) return ''; let div=document.createElement('div'); div.textContent=text; return div.innerHTML; }
 function getBmKey(){ return `bookmark_${currentUser ? currentUser.id+'_' : ''}${id}` }
 function getProgressKey(){ return `progress_${currentUser ? currentUser.id+'_' : ''}${id}` }
-function getMarksKey(){ return `marks_${currentUser ? currentUser.id+'_' : ''}${id}` }
+function getWordMarksKey(){ return `wordmarks_${currentUser ? currentUser.id+'_' : ''}${id}` }
 
 function formatContent(text){
   if(!text) return '';
-  let marks = JSON.parse(localStorage.getItem(getMarksKey()) || '[]');
-  return text.split(/\n\s*\n/).map((p, idx)=>{
+  let marks = JSON.parse(localStorage.getItem(getWordMarksKey()) || '[]');
+  // marks = ["0-5", "2-10"] => para 0 word 5
+  
+  return text.split(/\n\s*\n/).map((p, pIdx)=>{
     p=p.trim(); if(!p) return '';
-    if(p==='---') return `<div style="text-align:center;color:#6d28d9;margin:30px 0;letter-spacing:8px;font-size:20px">• • •</div>`;
-    let isMarked = marks.includes(idx);
-    return `<p data-idx="${idx}" class="${isMarked?'marked':''}" onclick="toggleMark(${idx}, this)">${escapeHtml(p)}</p>`;
+    if(p==='---') return `<div style="text-align:center;color:#6d28d9;margin:30px 0;letter-spacing:8px">• • •</div>`;
+    
+    // قسم الفقرة لكلمات
+    let words = p.split(/(\s+)/); // يحافظ على المسافات
+    let html = '';
+    let wIdx = 0;
+    words.forEach(w=>{
+      if(w.trim()===''){
+        html += w; // مسافة
+      } else {
+        let key = `${pIdx}-${wIdx}`;
+        let isMarked = marks.includes(key);
+        html += `<span class="word ${isMarked?'marked':''}" data-key="${key}" onclick="toggleWord('${key}', this)">${escapeHtml(w)}</span>`;
+        wIdx++;
+      }
+    });
+    return `<p>${html}</p>`;
   }).join('');
 }
 
-function toggleMark(idx, el){
-  let marks = JSON.parse(localStorage.getItem(getMarksKey()) || '[]');
-  let exists = marks.indexOf(idx);
-  if(exists > -1){
-    marks.splice(exists, 1);
+function toggleWord(key, el){
+  let marks = JSON.parse(localStorage.getItem(getWordMarksKey()) || '[]');
+  let idx = marks.indexOf(key);
+  if(idx > -1){
+    marks.splice(idx,1);
     el.classList.remove('marked');
   } else {
-    marks.push(idx);
+    marks.push(key);
     el.classList.add('marked');
-    el.style.transform='scale(1.02)';
-    setTimeout(()=>el.style.transform='scale(1)',200);
   }
-  localStorage.setItem(getMarksKey(), JSON.stringify(marks));
-  updateMarksPanel();
-  let fab = document.getElementById('bookmark-fab');
-  fab.innerText = exists>-1 ? '❌' : '📌';
-  setTimeout(()=>fab.innerText='🔖',1000);
+  localStorage.setItem(getWordMarksKey(), JSON.stringify(marks));
+  updateWordPanel();
 }
 
-function updateMarksPanel(){
-  let marks = JSON.parse(localStorage.getItem(getMarksKey()) || '[]');
+function updateWordPanel(){
+  let marks = JSON.parse(localStorage.getItem(getWordMarksKey()) || '[]');
   let panel = document.getElementById('marks-panel');
-  if(marks.length === 0){ panel.style.display='none'; return; }
+  if(marks.length===0){ panel.style.display='none'; return; }
   panel.style.display='block';
-  panel.innerHTML = `<div style="color:#facc15;font-size:12px;font-weight:700;margin-bottom:6px">📌 علاماتك (${marks.length})</div>` +
-    marks.map(i=>`<div class="mark-item" onclick="goToMark(${i})">سطر ${i+1} ←</div>`).join('') +
-    `<div onclick="clearAllMarks()" style="color:#ef4444;font-size:11px;text-align:center;margin-top:8px;cursor:pointer;padding:4px;background:rgba(239,68,68,0.1);border-radius:6px">مسح الكل</div>`;
+  
+  // جيب نص الكلمات المعلمة
+  let words = [];
+  marks.forEach(k=>{
+    let el = document.querySelector(`[data-key="${k}"]`);
+    if(el) words.push(el.innerText);
+  });
+  
+  panel.innerHTML = `<div style="color:#facc15;font-size:12px;font-weight:700">🖍️ كلماتك (${marks.length})</div>
+  <div style="display:flex;flex-wrap:wrap;gap:4px;margin:8px 0">${words.map(w=>`<span style="background:#facc15;color:#000;padding:2px 6px;border-radius:6px;font-size:11px">${escapeHtml(w)}</span>`).join('')}</div>
+  <div onclick="clearWords()" style="color:#ef4444;font-size:11px;text-align:center;cursor:pointer;background:rgba(239,68,68,0.1);padding:4px;border-radius:6px">مسح الكل</div>`;
 }
-function goToMark(idx){
-  let el = document.querySelector(`p[data-idx="${idx}"]`);
-  if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
-}
-function clearAllMarks(){
-  if(confirm('تمسح كل العلامات؟')){
-    localStorage.removeItem(getMarksKey());
-    document.querySelectorAll('#story-text p.marked').forEach(p=>p.classList.remove('marked'));
-    updateMarksPanel();
-  }
-}
+function clearWords(){ if(confirm('تمسح كل الكلمات؟')){ localStorage.removeItem(getWordMarksKey()); document.querySelectorAll('.word.marked').forEach(e=>e.classList.remove('marked')); updateWordPanel(); } }
 
 function saveProgress(){
   let scroll = window.scrollY; let total = document.body.scrollHeight - window.innerHeight;
@@ -123,32 +125,24 @@ function saveProgress(){
   localStorage.setItem(getBmKey(), scroll); localStorage.setItem(getProgressKey(), percent);
   document.getElementById('progressText').innerText = percent+'%'; document.getElementById('progress-bar').style.width = percent+'%';
 }
-function saveBookmarkManual(){ saveProgress(); let btn=document.getElementById('bookmark-fab'); btn.innerText='✅'; setTimeout(()=>btn.innerText='🔖',1500); }
+function saveBookmarkManual(){ saveProgress(); let b=document.getElementById('bookmark-fab'); b.innerText='✅'; setTimeout(()=>b.innerText='🔖',1000); }
 function resumeRead(){ let pos=localStorage.getItem(getBmKey()); if(pos) window.scrollTo({top:parseInt(pos), behavior:'smooth'}); closeBm(); }
 function closeBm(){ document.getElementById('bookmark-modal').style.display='none'; }
-function checkBookmark(){ let pos=localStorage.getItem(getBmKey()); let prog=localStorage.getItem(getProgressKey()); if(pos && parseInt(pos)>300){ document.getElementById('bm-text').innerText=`انت وقفت عند ${prog||0}%، تكمل؟`; document.getElementById('bookmark-modal').style.display='flex'; } }
+function checkBookmark(){ let pos=localStorage.getItem(getBmKey()); let prog=localStorage.getItem(getProgressKey()); if(pos && parseInt(pos)>300){ document.getElementById('bm-text').innerText=`وقفت عند ${prog||0}%، تكمل؟`; document.getElementById('bookmark-modal').style.display='flex'; } }
 
 async function loadNovel(){
-  try{
-    let res=await fetch(`${DB}.json`); let n=await res.json();
-    if(!n){ document.getElementById('title').innerText="الرواية اتمسحت"; return; }
-    currentNovel=n; document.title=n.title+" - Monarch"; document.getElementById('title').innerText=n.title;
-    let cover=document.getElementById('cover'); cover.src=n.cover; cover.style.display='block'; cover.onerror=()=>cover.src='https://via.placeholder.com/200x280?text=No+Image';
-    document.getElementById('summary').innerText=n.summary||''; document.getElementById('summary').style.display=n.summary?'block':'none';
-    let rankHtml=n.rank?`<span class="rank-badge">${n.rank}</span>`:'';
-    document.getElementById('meta').innerHTML=`${rankHtml} ✍️ ${escapeHtml(n.author||'مجهول')} - 👁️ ${n.views||0}`;
-    document.getElementById('story-text').innerHTML=formatContent(n.content);
-    document.getElementById('likeCount').innerText=n.likes||0;
-    let wc=n.content.split(/\s+/).length; document.getElementById('readTime').innerText=`⏱️ ${Math.ceil(wc/200)} د`;
-    fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({views:(n.views||0)+1})});
-    loadComments(); setTimeout(checkBookmark,800); window.addEventListener('scroll', saveProgress);
-    if(currentUser) document.getElementById('cName').value=currentUser.name;
-    updateMarksPanel();
-  }catch(e){ document.getElementById('title').innerText="خطأ في التحميل"; }
+  let res=await fetch(`${DB}.json`); let n=await res.json();
+  if(!n){ document.getElementById('title').innerText="اتمسحت"; return; }
+  document.getElementById('title').innerText=n.title;
+  let cover=document.getElementById('cover'); cover.src=n.cover; cover.style.display='block';
+  document.getElementById('meta').innerHTML=`✍️ ${escapeHtml(n.author||'مجهول')} - 👁️ ${n.views||0}`;
+  document.getElementById('story-text').innerHTML=formatContent(n.content);
+  document.getElementById('likeCount').innerText=n.likes||0;
+  fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({views:(n.views||0)+1})});
+  setTimeout(checkBookmark,800); window.addEventListener('scroll', saveProgress);
+  updateWordPanel();
 }
 async function likeNovel(){ if(localStorage.getItem('liked_'+id)) return alert('عملت لايك قبل كده'); let r=await fetch(`${DB}.json`); let n=await r.json(); let nl=(n.likes||0)+1; await fetch(`${DB}.json`,{method:'PATCH',body:JSON.stringify({likes:nl})}); document.getElementById('likeCount').innerText=nl; localStorage.setItem('liked_'+id,'1'); }
-async function addComment(){ let name=document.getElementById('cName').value.trim()||currentUser.name; let text=document.getElementById('cText').value.trim(); if(!text) return; await fetch(`${DB}/comments.json`,{method:'POST',body:JSON.stringify({name,text,time:Date.now()})}); document.getElementById('cText').value=''; loadComments(); }
-async function loadComments(){ let r=await fetch(`${DB}/comments.json`); let d=await r.json(); let list=document.getElementById('commentsList'); let count=document.getElementById('cCount'); if(!d){ list.innerHTML='<p style="color:#475569;text-align:center">كن أول معلق 🔥</p>'; return;} let html=''; let c=0; for(let k in d){ c++; let x=d[k]; html=`<div class="comment-box"><b style="color:#a78bfa">${escapeHtml(x.name)}</b><div style="color:#cbd5e1;margin-top:4px">${escapeHtml(x.text)}</div></div>`+html; } list.innerHTML=html; count.innerText=`(${c})`; }
 loadNovel();
 let fontSize=19;
 function changeFont(c){ fontSize+=c; if(fontSize<14) fontSize=14; if(fontSize>32) fontSize=32; document.querySelectorAll('#story-text p').forEach(p=>p.style.fontSize=fontSize+'px'); }
